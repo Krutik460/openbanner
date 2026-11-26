@@ -46,11 +46,11 @@ function ShapePreview({ preset }: { preset: ShapePreset }) {
     traceShape(ctx as unknown as Context, preset.shape, w, h, (preset.radius ?? 0) * scale)
     ctx.closePath()
     if (preset.fill === null) {
-      ctx.strokeStyle = '#E4E4E7'
+      ctx.strokeStyle = '#3F3F46'
       ctx.lineWidth = 2
       ctx.stroke()
     } else {
-      ctx.fillStyle = '#E4E4E7'
+      ctx.fillStyle = '#3F3F46'
       ctx.fill()
     }
   }, [preset])

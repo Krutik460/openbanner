@@ -33,7 +33,8 @@ export function ProfileMock() {
     observer.observe(card)
     return () => observer.disconnect()
   }, [showProfile, device])
-  const unit = desktop ? 1.97 : 4.06
+  // Mobile text is really ~4x; it is toned down here so the preview stays readable while editing.
+  const unit = desktop ? 1.97 : 2.9
 
   const frame: CSSProperties = {
     width: BANNER.width,
@@ -42,48 +43,37 @@ export function ProfileMock() {
   }
 
   if (!showProfile) {
-    return <div aria-hidden className="pointer-events-none absolute top-0 left-0 shadow-[0_30px_80px_-20px_rgb(0_0_0/0.8)]" style={{ ...frame, height: BANNER.height }} />
+    return <div aria-hidden className="pointer-events-none absolute top-0 left-0 shadow-[0_24px_60px_-20px_rgb(0_0_0/0.35)]" style={{ ...frame, height: BANNER.height }} />
   }
 
   const u = (px: number) => `calc(var(--u) * ${px}px)`
+  const bar = (width: number): CSSProperties => ({ height: u(32), width: u(width), borderRadius: 999, background: 'rgb(0 0 0 / 0.07)' })
   return (
     <div aria-hidden className="pointer-events-none absolute top-0 left-0" style={{ ...frame, ['--u' as string]: unit }}>
       <div
         ref={cardRef}
-        className="bg-white text-[#191919] shadow-[0_40px_120px_-30px_rgb(0_0_0/0.9)]"
-        style={{ borderRadius: desktop ? 16 : 0, fontFamily: 'system-ui, -apple-system, "Segoe UI", Roboto, sans-serif' }}
+        className="bg-white text-[#191919]"
+        style={{
+          borderRadius: desktop ? 16 : 0,
+          // A hairline instead of a shadow: a shadow would smear through the faded edge below.
+          boxShadow: 'inset 0 0 0 2px rgb(0 0 0 / 0.06)',
+          fontFamily: 'system-ui, -apple-system, "Segoe UI", Roboto, sans-serif',
+          // The card is context, not content: let it dissolve instead of ending in a hard white block.
+          maskImage: 'linear-gradient(to bottom, #000 calc(100% - 150px), transparent)',
+        }}
       >
         <div style={{ height: BANNER.height }} />
-        <div style={{ padding: `${avatar.y + avatar.d - BANNER.height + unit * 12}px ${u(desktop ? 24 : 16)} ${u(24)}` }}>
+        <div style={{ padding: `${avatar.y + avatar.d - BANNER.height + unit * 12}px ${u(desktop ? 24 : 16)} ${u(20)}` }}>
           <div style={{ fontSize: u(24), fontWeight: 600, lineHeight: 1.25 }}>{profile?.name || 'Your Name'}</div>
-          <div style={{ fontSize: u(16), lineHeight: 1.4, marginTop: u(2), maxWidth: desktop ? '62%' : '100%' }}>
+          <div style={{ fontSize: u(16), lineHeight: 1.4, marginTop: u(2), maxWidth: desktop ? '62%' : '100%', color: 'rgb(0 0 0 / 0.82)' }}>
             {profile?.headline || 'Your headline appears here'}
           </div>
-          <div style={{ fontSize: u(14), lineHeight: 1.4, marginTop: u(8), color: 'rgb(0 0 0 / 0.6)' }}>
-            {profile?.location || 'Your location'} · <span style={{ color: '#0A66C2', fontWeight: 600 }}>Contact info</span>
-          </div>
-          <div style={{ fontSize: u(14), marginTop: u(8), color: '#0A66C2', fontWeight: 600 }}>500+ connections</div>
-          <div style={{ display: 'flex', gap: u(8), marginTop: u(16) }}>
-            {['Open to', 'Add profile section', 'Resources'].map((label, i) => (
-              <span
-                key={label}
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  height: u(32),
-                  padding: `0 ${u(16)}`,
-                  borderRadius: 999,
-                  fontSize: u(16),
-                  fontWeight: 600,
-                  whiteSpace: 'nowrap',
-                  ...(i === 0
-                    ? { background: '#0A66C2', color: '#FFFFFF' }
-                    : { color: i === 1 ? '#0A66C2' : 'rgb(0 0 0 / 0.6)', boxShadow: `inset 0 0 0 ${u(1)} ${i === 1 ? '#0A66C2' : 'rgb(0 0 0 / 0.6)'}` }),
-                }}
-              >
-                {label}
-              </span>
-            ))}
+          <div style={{ fontSize: u(14), lineHeight: 1.4, marginTop: u(8), color: 'rgb(0 0 0 / 0.5)' }}>{profile?.location || 'Your location'}</div>
+          {/* Stand-ins for LinkedIn's buttons: enough to read as a profile, quiet enough to ignore. */}
+          <div style={{ display: 'flex', gap: u(8), marginTop: u(18), paddingBottom: u(40) }}>
+            <span style={bar(92)} />
+            <span style={bar(164)} />
+            <span style={bar(72)} />
           </div>
         </div>
       </div>

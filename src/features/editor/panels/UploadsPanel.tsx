@@ -6,6 +6,7 @@ import { useAssetImage } from '@/lib/assets'
 import type { AssetMeta } from '@/lib/storage'
 import { useAssets } from '@/store/assets'
 import { useEditor } from '@/store/editor'
+import { toast } from '@/store/toasts'
 import { addImage, addImageFiles } from '../actions'
 
 function AssetTile({ asset }: { asset: AssetMeta }) {
@@ -32,7 +33,10 @@ function AssetTile({ asset }: { asset: AssetMeta }) {
           <button
             type="button"
             aria-label="Use as background"
-            onClick={() => useEditor.getState().setBackground({ image: { assetId: asset.id, opacity: 1 } })}
+            onClick={() => {
+              useEditor.getState().setBackground({ image: { assetId: asset.id, opacity: 1 } })
+              toast('Photo set as background', { action: { label: 'Undo', run: () => useEditor.getState().undo() } })
+            }}
             className="flex size-7 items-center justify-center rounded-md bg-black/70 text-white backdrop-blur hover:bg-black"
           >
             <PaintBucket className="size-3.5" />
@@ -59,8 +63,9 @@ export function UploadsPanel() {
   const take = async (files: FileList | null) => {
     if (!files?.length) return
     setBusy(true)
-    await addImageFiles(files)
+    const count = await addImageFiles(files)
     setBusy(false)
+    if (count === 0) toast('That file could not be read as an image', { tone: 'error' })
   }
 
   return (
@@ -74,7 +79,7 @@ export function UploadsPanel() {
         onDrop={(e) => (e.preventDefault(), e.stopPropagation(), setOver(false), take(e.dataTransfer.files))}
         className={clsx(
           'flex w-full flex-col items-center gap-2 rounded-xl border border-dashed px-4 py-7 text-center transition-colors',
-          over ? 'border-accent bg-accent/5' : 'border-line-strong hover:bg-hover',
+          over ? 'border-accent-strong bg-accent/20' : 'border-line-strong hover:bg-hover',
         )}
       >
         <span className="flex size-9 items-center justify-center rounded-full bg-raised">

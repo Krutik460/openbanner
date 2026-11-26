@@ -20,7 +20,7 @@ function Swatch({ fill, active, onPick, wide }: { fill: BackgroundFill; active: 
       aria-pressed={active}
       onClick={onPick}
       className={clsx(
-        'rounded-md ring-1 ring-white/10 transition-transform duration-150 hover:scale-[1.06]',
+        'rounded-md ring-1 ring-black/10 transition-transform duration-150 hover:scale-[1.06]',
         wide ? 'aspect-[2/1]' : 'aspect-square',
         active && 'outline-2 outline-offset-2 outline-fg',
       )}
@@ -40,7 +40,7 @@ function GradientEditor({ gradient }: { gradient: LinearGradient }) {
             key={i}
             align="start"
             trigger={
-              <button type="button" aria-label={`Gradient colour ${i + 1}`} className="size-7 rounded-full ring-1 ring-white/25 transition-transform hover:scale-110" style={{ background: stop.color }} />
+              <button type="button" aria-label={`Gradient colour ${i + 1}`} className="size-7 rounded-full ring-1 ring-black/15 transition-transform hover:scale-110" style={{ background: stop.color }} />
             }
           >
             <ColorPanel
@@ -49,7 +49,7 @@ function GradientEditor({ gradient }: { gradient: LinearGradient }) {
             />
           </Popover>
         ))}
-        <div className="ml-1 h-7 flex-1 rounded-full ring-1 ring-white/10" style={{ background: fillToCss({ ...gradient, angle: 90 }) }} />
+        <div className="ml-1 h-7 flex-1 rounded-full ring-1 ring-black/10" style={{ background: fillToCss({ ...gradient, angle: 90 }) }} />
       </div>
       <SliderRow label="Angle" value={gradient.angle} min={0} max={360} step={5} format={(v) => `${v}°`} onChange={(angle) => update({ ...gradient, angle })} />
     </div>
@@ -82,7 +82,7 @@ export function BackgroundPanel() {
               <button
                 type="button"
                 aria-label="Custom colour"
-                className="flex aspect-square items-center justify-center rounded-md text-white ring-1 ring-white/20 transition-transform hover:scale-[1.06]"
+                className="flex aspect-square items-center justify-center rounded-md text-white ring-1 ring-black/10 transition-transform hover:scale-[1.06]"
                 style={{ background: 'conic-gradient(from 210deg, #ff5f6d, #ffc371, #c8f24b, #22d3ee, #6366f1, #ec4899, #ff5f6d)' }}
               >
                 <Plus className="size-4 drop-shadow" />
@@ -122,7 +122,7 @@ export function BackgroundPanel() {
 
       <section>
         <SectionTitle>Texture</SectionTitle>
-        <div className="grid grid-cols-5 gap-1 rounded-lg bg-app p-0.5">
+        <div className="grid grid-cols-5 gap-1 rounded-lg bg-raised p-0.5">
           {PATTERNS.map(({ label, pattern: preset }) => {
             const active = preset ? pattern?.kind === preset.kind : !pattern
             return (
@@ -131,7 +131,7 @@ export function BackgroundPanel() {
                 type="button"
                 aria-pressed={active}
                 onClick={() => setBackground({ pattern: preset ? { ...preset, color: patternColor } : undefined })}
-                className={clsx('h-7 rounded-md text-xs font-medium transition-colors', active ? 'bg-active text-fg' : 'text-muted hover:text-fg')}
+                className={clsx('h-7 rounded-md text-xs font-medium transition-colors', active ? 'bg-panel text-fg shadow-[0_0_0_1px_rgb(0_0_0/0.06),0_1px_2px_rgb(0_0_0/0.12)]' : 'text-muted hover:text-fg')}
               >
                 {label}
               </button>

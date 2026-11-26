@@ -16,9 +16,9 @@ function SaveStatus() {
     )
   }
   return (
-    <span className="flex items-center gap-1.5 text-xs text-subtle" aria-live="polite">
+    <span className="flex items-center gap-1.5 text-xs text-subtle" aria-live="polite" title="Your design is stored only in this browser. Nothing is uploaded.">
       {saveState === 'saving' ? <LoaderCircle className="size-3.5 animate-spin" /> : <CloudCheck className="size-3.5" />}
-      <span className="hidden lg:inline">{saveState === 'saving' ? 'Saving…' : 'Saved in this browser'}</span>
+      <span className="hidden lg:inline">{saveState === 'saving' ? 'Saving…' : 'Saved on this device'}</span>
     </span>
   )
 }

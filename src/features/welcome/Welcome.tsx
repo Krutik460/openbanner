@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { ArrowLeft, ArrowRight, Check, LoaderCircle, Plus, TriangleAlert } from 'lucide-react'
+import { ArrowLeft, ArrowRight, Check, Gift, LoaderCircle, Lock, Plus, ShieldCheck, TriangleAlert, UserRoundX } from 'lucide-react'
 import { StaticBanner } from '@/canvas/StaticBanner'
 import { Button, Logo } from '@/components/ui'
 import { AVATAR, BANNER, SAMPLE_PROFILE } from '@/lib/constants'
@@ -12,7 +12,7 @@ import { Avatar, ProfileFields } from '../editor/ProfileFields'
 import { useTemplateDocs } from '../editor/panels/TemplatesPanel'
 
 /** A small profile card with a banner on it: the product's promise in one picture. */
-function ProfileCard({ doc, profile, width, className }: { doc: Pick<BannerDoc, 'background' | 'elements'>; profile: Profile | null; width: number; className?: string }) {
+function ProfileCard({ doc, profile, width, className, quiet }: { doc: Pick<BannerDoc, 'background' | 'elements'>; profile: Profile | null; width: number; className?: string; quiet?: boolean }) {
   const k = width / BANNER.width
   const a = AVATAR.desktop
   return (
@@ -23,14 +23,22 @@ function ProfileCard({ doc, profile, width, className }: { doc: Pick<BannerDoc, 
           <Avatar profile={profile} size={(a.d - a.ring * 2) * k} />
         </div>
       </div>
-      <div style={{ padding: `${(a.y + a.d - BANNER.height) * k + width * 0.022}px ${a.x * k}px ${width * 0.045}px` }}>
-        <div className="truncate font-semibold" style={{ fontSize: Math.max(11, width * 0.034) }}>
-          {profile?.name || 'Your Name'}
+      {quiet ? (
+        // In a grid of twelve, repeating the name on every card is noise; placeholder lines keep the shape.
+        <div className="flex flex-col gap-1.5" style={{ padding: `${(a.y + a.d - BANNER.height) * k + width * 0.03}px ${a.x * k}px ${width * 0.04}px` }}>
+          <span className="h-2 w-[28%] rounded-full bg-black/15" />
+          <span className="h-1.5 w-[46%] rounded-full bg-black/8" />
         </div>
-        <div className="mt-0.5 truncate text-black/60" style={{ fontSize: Math.max(9, width * 0.023) }}>
-          {profile?.headline || 'Your headline appears here'}
+      ) : (
+        <div style={{ padding: `${(a.y + a.d - BANNER.height) * k + width * 0.022}px ${a.x * k}px ${width * 0.045}px` }}>
+          <div className="truncate font-semibold" style={{ fontSize: Math.max(11, width * 0.034) }}>
+            {profile?.name || 'Your Name'}
+          </div>
+          <div className="mt-0.5 truncate text-black/60" style={{ fontSize: Math.max(9, width * 0.023) }}>
+            {profile?.headline || 'Your headline appears here'}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   )
 }
@@ -76,69 +84,129 @@ function Start({ onDone }: { onDone: (step: Step, profile: Profile) => void }) {
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-5xl flex-col items-center px-6 pt-[clamp(40px,9vh,112px)] text-center">
-      <p className="animate-rise rounded-full border border-line bg-raised/60 px-3.5 py-1 text-xs text-muted">
-        Free <span className="mx-1.5 text-subtle">·</span> No account <span className="mx-1.5 text-subtle">·</span> No watermark
-      </p>
-      <h1 className="mt-7 animate-rise text-[clamp(40px,7vw,84px)] leading-[0.98] font-semibold tracking-[-0.045em] text-balance [animation-delay:60ms]">
-        The banner your profile <span className="font-display font-normal tracking-[-0.02em] text-accent italic">deserves.</span>
-      </h1>
-      <p className="mt-6 max-w-xl animate-rise text-[17px] leading-relaxed text-pretty text-muted [animation-delay:120ms]">
-        A design canvas made for one job: your LinkedIn banner. Paste your profile link and design it right where it will live, with your photo and headline in place.
-      </p>
-
-      <form onSubmit={submit} className="mt-9 w-full max-w-xl animate-rise [animation-delay:180ms]" noValidate>
-        <div className="flex items-center gap-2 rounded-2xl border border-line-strong bg-raised p-1.5 max-sm:flex-col max-sm:items-stretch shadow-[0_20px_60px_-20px_rgb(0_0_0/0.8)] transition-colors focus-within:border-white/30">
-          <label htmlFor="profile-url" className="sr-only">
-            LinkedIn profile link
-          </label>
-          <input
-            id="profile-url"
-            value={value}
-            onChange={(e) => (setValue(e.target.value), setError(null))}
-            placeholder="linkedin.com/in/your-name"
-            autoComplete="off"
-            autoCapitalize="none"
-            spellCheck={false}
-            inputMode="url"
-            aria-invalid={Boolean(error)}
-            aria-describedby={error ? 'profile-url-error' : undefined}
-            className="h-12 min-w-0 flex-1 bg-transparent px-3.5 text-[15px] placeholder:text-subtle"
-          />
-          <Button type="submit" variant="primary" size="lg" disabled={busy} className="min-w-[152px]">
-            {busy ? (
-              <>
-                <LoaderCircle className="size-4 animate-spin" /> Looking you up
-              </>
-            ) : (
-              <>
-                Start designing <ArrowRight className="size-4" />
-              </>
-            )}
-          </Button>
-        </div>
-        <p id="profile-url-error" role="alert" className="mt-2.5 min-h-5 text-sm text-danger">
-          {error}
+    <>
+      <div className="mx-auto flex w-full max-w-5xl flex-col items-center px-6 pt-[clamp(28px,6vh,80px)] text-center">
+        <ul className="flex animate-rise flex-wrap items-center justify-center gap-2 text-xs font-medium">
+          {['Free forever', 'No account', 'Private by design'].map((point) => (
+            <li key={point} className="flex h-7 items-center gap-1.5 rounded-full border border-line bg-panel pr-3 pl-2 shadow-[0_1px_2px_rgb(0_0_0/0.04)]">
+              <span className="flex size-4 items-center justify-center rounded-full bg-accent">
+                <Check className="size-3" strokeWidth={3} />
+              </span>
+              {point}
+            </li>
+          ))}
+        </ul>
+        <h1 className="mt-7 animate-rise text-[clamp(40px,7vw,84px)] leading-[0.98] font-semibold tracking-[-0.045em] text-balance [animation-delay:60ms]">
+          The banner your profile <Mark>deserves.</Mark>
+        </h1>
+        <p className="mt-6 max-w-[38rem] animate-rise text-[17px] leading-relaxed text-pretty text-muted [animation-delay:120ms]">
+          Design your LinkedIn banner on a live preview of your own profile. It’s free, there’s nothing to sign up for, and your work never leaves your browser.
         </p>
-      </form>
 
-      <div className="flex animate-rise flex-wrap items-center justify-center gap-x-5 gap-y-2 text-sm text-muted [animation-delay:240ms]">
-        <button type="button" className="underline decoration-line-strong underline-offset-4 transition-colors hover:text-fg" onClick={() => onDone({ name: 'setup', note: null }, existing ?? { name: '', headline: '' })}>
-          Continue without a link
-        </button>
-        <button type="button" className="underline decoration-line-strong underline-offset-4 transition-colors hover:text-fg" onClick={() => onDone({ name: 'setup', note: null }, sample)}>
-          Try a sample profile
-        </button>
+        <form onSubmit={submit} className="mt-9 w-full max-w-xl animate-rise [animation-delay:180ms]" noValidate>
+          <div className="flex items-center gap-2 rounded-2xl border border-line-strong bg-panel p-1.5 shadow-[0_1px_2px_rgb(0_0_0/0.04),0_16px_40px_-18px_rgb(0_0_0/0.25)] transition-colors focus-within:border-fg/45 max-sm:flex-col max-sm:items-stretch">
+            <label htmlFor="profile-url" className="sr-only">
+              LinkedIn profile link
+            </label>
+            <input
+              id="profile-url"
+              value={value}
+              onChange={(e) => (setValue(e.target.value), setError(null))}
+              placeholder="linkedin.com/in/your-name"
+              autoComplete="off"
+              autoCapitalize="none"
+              spellCheck={false}
+              inputMode="url"
+              aria-invalid={Boolean(error)}
+              aria-describedby={error ? 'profile-url-error' : 'profile-url-note'}
+              className="h-12 min-w-0 flex-1 bg-transparent px-3.5 text-[15px] placeholder:text-subtle"
+            />
+            <Button type="submit" variant="primary" size="lg" disabled={busy} className="min-w-[152px]">
+              {busy ? (
+                <>
+                  <LoaderCircle className="size-4 animate-spin" /> Looking you up
+                </>
+              ) : (
+                <>
+                  Start designing <ArrowRight className="size-4" />
+                </>
+              )}
+            </Button>
+          </div>
+          {error ? (
+            <p id="profile-url-error" role="alert" className="mt-3 text-sm text-danger">
+              {error}
+            </p>
+          ) : (
+            <p id="profile-url-note" className="mt-3 flex items-start justify-center gap-1.5 text-[13px] text-subtle">
+              <Lock className="mt-0.5 size-3.5 shrink-0" />
+              Used once to read your public name, headline and photo. Never stored.
+            </p>
+          )}
+        </form>
+
+        <div className="mt-4 flex animate-rise flex-wrap items-center justify-center gap-x-5 gap-y-2 text-sm text-muted [animation-delay:240ms]">
+          <button type="button" className="underline decoration-line-strong underline-offset-4 transition-colors hover:text-fg" onClick={() => onDone({ name: 'setup', note: null }, existing ?? { name: '', headline: '' })}>
+            Start without a link
+          </button>
+          <button type="button" className="underline decoration-line-strong underline-offset-4 transition-colors hover:text-fg" onClick={() => onDone({ name: 'setup', note: null }, sample)}>
+            Try a sample profile
+          </button>
+        </div>
+
+        {/* Three real templates, rendered live on profile cards. */}
+        <div aria-hidden className="pointer-events-none relative mt-[clamp(40px,7vh,72px)] h-[340px] w-full max-w-4xl animate-rise [animation-delay:320ms] max-sm:hidden">
+          <ProfileCard doc={pick('editorial')} profile={sample} width={520} className="absolute top-10 left-0 -rotate-[5deg] shadow-[0_0_0_1px_rgb(0_0_0/0.06),0_30px_60px_-20px_rgb(0_0_0/0.3)]" />
+          <ProfileCard doc={pick('sunset')} profile={sample} width={520} className="absolute top-10 right-0 rotate-[5deg] shadow-[0_0_0_1px_rgb(0_0_0/0.06),0_30px_60px_-20px_rgb(0_0_0/0.3)]" />
+          <ProfileCard doc={pick('aurora')} profile={sample} width={640} className="absolute top-0 left-1/2 -translate-x-1/2 shadow-[0_0_0_1px_rgb(0_0_0/0.06),0_40px_80px_-24px_rgb(0_0_0/0.4)]" />
+        </div>
       </div>
 
-      {/* Three real templates, rendered live on profile cards. */}
-      <div aria-hidden className="pointer-events-none relative mt-[clamp(48px,8vh,88px)] h-[300px] w-full max-w-4xl animate-rise [animation-delay:320ms] max-sm:hidden">
-        <ProfileCard doc={pick('editorial')} profile={sample} width={520} className="absolute top-10 left-0 -rotate-[5deg] opacity-70 shadow-2xl" />
-        <ProfileCard doc={pick('sunset')} profile={sample} width={520} className="absolute top-10 right-0 rotate-[5deg] opacity-70 shadow-2xl" />
-        <ProfileCard doc={pick('aurora')} profile={sample} width={640} className="absolute top-0 left-1/2 -translate-x-1/2 shadow-[0_40px_100px_-20px_rgb(0_0_0/0.9)]" />
-        <div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-app to-transparent" />
-      </div>
-    </div>
+      <section aria-label="Why Openbanner" className="mx-auto w-full max-w-5xl px-6 pt-14 pb-4">
+        <div className="grid gap-4 md:grid-cols-3">
+          {PROMISES.map(({ icon: Icon, title, body }) => (
+            <div key={title} className="rounded-2xl border border-line bg-panel p-6">
+              <span className="flex size-10 items-center justify-center rounded-xl bg-accent">
+                <Icon className="size-5" strokeWidth={1.75} />
+              </span>
+              <h2 className="mt-5 text-lg font-semibold tracking-tight">{title}</h2>
+              <p className="mt-1.5 text-sm leading-relaxed text-muted">{body}</p>
+            </div>
+          ))}
+        </div>
+        <p className="mx-auto mt-6 max-w-2xl text-center text-[13px] leading-relaxed text-subtle">
+          The one thing that touches a server: if you paste your profile link, we read your public LinkedIn page once to fill in your name, headline and photo. Nothing is saved, and you can skip it.
+        </p>
+      </section>
+    </>
+  )
+}
+
+const PROMISES = [
+  {
+    icon: Gift,
+    title: 'Free, with no catch',
+    body: 'No paid plan, no watermark, no export limit. Every template, font and tool is included.',
+  },
+  {
+    icon: UserRoundX,
+    title: 'No account',
+    body: 'There is nothing to sign up for. Open the page and start. Come back later and your work is still here.',
+  },
+  {
+    icon: ShieldCheck,
+    title: 'Private by design',
+    body: 'Designs, photos and uploads are stored in your browser, not on our servers. No analytics, no cookies, no tracking.',
+  },
+]
+
+/** The serif accent word, with a highlighter stroke behind it. */
+function Mark({ children }: { children: React.ReactNode }) {
+  return (
+    <span className="relative isolate inline-block font-display font-normal tracking-[-0.02em] italic">
+      {children}
+      <span aria-hidden className="absolute inset-x-[-0.06em] bottom-[0.1em] -z-10 h-[0.34em] -rotate-1 rounded-[0.08em] bg-accent" />
+    </span>
   )
 }
 
@@ -165,19 +233,19 @@ function Setup({ note, initial, onBack }: { note: Extract<Step, { name: 'setup' 
       <div className="grid gap-10 lg:grid-cols-[340px_1fr]">
         <div className="animate-rise lg:sticky lg:top-8 lg:self-start">
           <h1 className="text-3xl leading-tight font-semibold tracking-tight">
-            First, <span className="font-display text-[1.15em] font-normal text-accent italic">you.</span>
+            First, <span className="text-[1.15em]"><Mark>you.</Mark></span>
           </h1>
-          <p className="mt-2 text-sm leading-relaxed text-muted">This fills in the profile preview and personalises every template. It stays in your browser.</p>
+          <p className="mt-2 text-sm leading-relaxed text-muted">This fills in the profile preview and personalises every template. It is saved in your browser only.</p>
           {note && (
-            <p className={`mt-5 flex gap-2.5 rounded-xl border px-3.5 py-3 text-sm leading-relaxed ${note.tone === 'ok' ? 'border-accent/25 bg-accent/5' : 'border-line-strong bg-raised'}`}>
-              {note.tone === 'ok' ? <Check className="mt-0.5 size-4 shrink-0 text-accent" /> : <TriangleAlert className="mt-0.5 size-4 shrink-0 text-[#f5b700]" />}
+            <p className={`mt-5 flex gap-2.5 rounded-xl border px-3.5 py-3 text-sm leading-relaxed ${note.tone === 'ok' ? 'border-accent-strong/25 bg-accent/25' : 'border-[#e0a800]/40 bg-[#fff6d6]'}`}>
+              {note.tone === 'ok' ? <Check className="mt-0.5 size-4 shrink-0 text-accent-strong" /> : <TriangleAlert className="mt-0.5 size-4 shrink-0 text-[#a77b00]" />}
               {note.text}
             </p>
           )}
           <div ref={nameRef} className="mt-5 rounded-2xl border border-line bg-panel p-4">
             <ProfileFields profile={profile} onChange={setProfile} />
           </div>
-          <p className="mt-3 text-xs text-subtle">Click the photo to add yours. Templates update as you type.</p>
+          <p className="mt-3 text-xs text-subtle">Click the photo to change it. The templates update as you type.</p>
         </div>
 
         <div className="animate-rise [animation-delay:80ms]">
@@ -225,8 +293,8 @@ function TemplateCard({ doc, profile }: { doc: BannerDoc; profile: Profile }) {
     return () => observer.disconnect()
   }, [])
   return (
-    <div ref={ref} className="min-h-28">
-      {width > 0 && <ProfileCard doc={doc} profile={profile} width={width} />}
+    <div ref={ref} className="min-h-24">
+      {width > 0 && <ProfileCard quiet doc={doc} profile={profile} width={width} />}
     </div>
   )
 }
@@ -239,7 +307,7 @@ export function Welcome() {
   return (
     <div className="relative min-h-full overflow-x-hidden">
       {/* Soft glow behind the hero. */}
-      <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-[640px] bg-[radial-gradient(ellipse_60%_55%_at_50%_-10%,rgb(200_242_75/0.13),transparent)]" />
+      <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-[640px] bg-[radial-gradient(ellipse_60%_55%_at_50%_-10%,rgb(200_242_75/0.5),transparent)]" />
       <header className="relative flex h-16 items-center justify-between px-6">
         <Logo className="text-[15px]" />
         {hasDesign && (
@@ -256,7 +324,7 @@ export function Welcome() {
         )}
       </main>
       <footer className="relative px-6 py-8 text-center text-xs text-subtle">
-        Your designs and uploads are stored in this browser, not on a server. Not affiliated with LinkedIn.
+        Free and open. Not affiliated with LinkedIn.
       </footer>
     </div>
   )

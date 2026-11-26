@@ -59,7 +59,8 @@ describe('parseProfileHtml', () => {
 })
 
 describe('handleProfileRequest', () => {
-  const request = (handle: string) => new Request(`http://x/api/profile?handle=${encodeURIComponent(handle)}`)
+  const request = (handle: string) =>
+    new Request('http://x/api/profile', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ handle }) })
 
   it('returns the profile with the photo inlined', async () => {
     const requested: string[] = []
@@ -76,6 +77,7 @@ describe('handleProfileRequest', () => {
 
     const response = await handleProfileRequest(request('linkedin.com/in/ada-lovelace'), fetchImpl)
     expect(response.status).toBe(200)
+    expect(response.headers.get('cache-control')).toBe('no-store')
     expect(await response.json()).toEqual({
       ok: true,
       profile: {
@@ -110,6 +112,11 @@ describe('handleProfileRequest', () => {
     const response = await handleProfileRequest(request('ada-lovelace'), fetchImpl)
     expect(response.status).toBe(502)
     expect(await response.json()).toEqual({ ok: false, reason: 'blocked' })
+  })
+
+  it('refuses GET, so handles never travel in URLs', async () => {
+    const response = await handleProfileRequest(new Request('http://x/api/profile?handle=ada-lovelace'))
+    expect(response.status).toBe(405)
   })
 
   it('rejects anything that is not a profile handle without fetching', async () => {

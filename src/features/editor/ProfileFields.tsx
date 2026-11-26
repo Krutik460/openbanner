@@ -30,7 +30,7 @@ export function ProfileFields({ profile, onChange }: { profile: Profile; onChang
   return (
     <div className="flex gap-4">
       <input ref={fileRef} type="file" accept="image/*" hidden onChange={(e) => (pickPhoto(e.target.files?.[0]), (e.target.value = ''))} />
-      <button type="button" onClick={() => fileRef.current?.click()} aria-label="Change photo" className="group relative size-16 shrink-0 self-start rounded-full">
+      <button type="button" onClick={() => fileRef.current?.click()} aria-label="Change photo" className="group relative mt-5 size-16 shrink-0 self-start rounded-full">
         <Avatar profile={profile} size={64} />
         <span className="absolute inset-0 flex items-center justify-center rounded-full bg-black/55 opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100">
           <Camera className="size-5 text-white" />
@@ -38,15 +38,15 @@ export function ProfileFields({ profile, onChange }: { profile: Profile; onChang
       </button>
       <div className="min-w-0 flex-1 space-y-2">
         <label className="block">
-          <span className="sr-only">Name</span>
+          <span className="mb-1 block text-xs text-muted">Name</span>
           <input className={field} placeholder="Your name" value={profile.name} onChange={(e) => onChange({ ...profile, name: e.target.value })} autoComplete="name" />
         </label>
         <label className="block">
-          <span className="sr-only">Headline</span>
+          <span className="mb-1 block text-xs text-muted">Headline</span>
           <textarea
             className={`${field} resize-none`}
             rows={2}
-            placeholder="Your headline, e.g. Product designer at Northwind | Speaker"
+            placeholder="Product designer at Northwind | Speaker"
             value={profile.headline}
             onChange={(e) => onChange({ ...profile, headline: e.target.value })}
           />

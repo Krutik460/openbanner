@@ -4,6 +4,7 @@ import { loadFonts } from '@/lib/fonts'
 import { instantiate, TEMPLATE_FONTS, TEMPLATES, type Template } from '@/lib/templates'
 import type { BannerDoc, Profile } from '@/lib/types'
 import { useEditor } from '@/store/editor'
+import { toast } from '@/store/toasts'
 
 /**
  * Templates built for the given profile. They are rebuilt once their fonts
@@ -33,6 +34,7 @@ export function TemplatesPanel() {
     const editor = useEditor.getState()
     // Build fresh so the applied elements get their own ids.
     const fresh = instantiate(template, editor.profile)
+    const replacing = editor.doc.elements.length > 0
     editor.select([])
     editor.mutate((doc) => ({
       ...doc,
@@ -40,29 +42,21 @@ export function TemplatesPanel() {
       background: fresh.background,
       elements: fresh.elements,
     }))
+    if (replacing) toast(`${template.name} applied`, { action: { label: 'Undo', run: () => useEditor.getState().undo() } })
   }
 
   return (
-    <div className="space-y-3">
-      <p className="text-xs leading-relaxed text-subtle">
-        Each one is filled in with your name and headline. Picking one replaces the current design — undo brings it back.
-      </p>
-      <ul className="space-y-3">
-        {templates.map(({ template, doc }) => (
-          <li key={template.id}>
-            <button
-              type="button"
-              onClick={() => apply(template)}
-              className="group relative block w-full overflow-hidden rounded-lg ring-1 ring-line transition-[box-shadow,transform] duration-200 hover:-translate-y-0.5 hover:ring-2 hover:ring-fg/60"
-            >
+    <ul className="space-y-4">
+      {templates.map(({ template, doc }) => (
+        <li key={template.id}>
+          <button type="button" onClick={() => apply(template)} className="group block w-full text-left">
+            <span className="block overflow-hidden rounded-lg ring-1 ring-line transition-[box-shadow,transform] duration-200 group-hover:-translate-y-0.5 group-hover:ring-2 group-hover:ring-fg/60">
               <StaticBanner doc={doc} width={280} />
-              <span className="absolute bottom-1.5 left-1.5 rounded-md bg-black/70 px-1.5 py-0.5 text-[11px] font-medium text-white opacity-0 backdrop-blur transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100">
-                {template.name}
-              </span>
-            </button>
-          </li>
-        ))}
-      </ul>
-    </div>
+            </span>
+            <span className="mt-1.5 block text-xs text-muted transition-colors group-hover:text-fg">{template.name}</span>
+          </button>
+        </li>
+      ))}
+    </ul>
   )
 }

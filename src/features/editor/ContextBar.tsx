@@ -3,15 +3,15 @@ import { Select } from 'radix-ui'
 import {
   AlignCenter, AlignEndHorizontal, AlignEndVertical, AlignHorizontalJustifyCenter, AlignLeft, AlignRight,
   AlignStartHorizontal, AlignStartVertical, AlignVerticalJustifyCenter, ArrowDownToLine, ArrowUpToLine, BringToFront,
-  CaseUpper, Check, ChevronDown, Copy, Italic, Lock, LockOpen, Minus, PaintBucket, Plus, SendToBack, Spline, Trash2,
-  Blend, LetterText, Layers,
+  CaseUpper, Check, ChevronDown, Copy, Droplet, Italic, Lock, LockOpen, Minus, PaintBucket, Plus, SendToBack, Trash2,
 } from 'lucide-react'
 import { alignSelection, type AlignMode } from '@/canvas/align'
-import { ColorButton, Divider, IconButton, Popover, SliderRow } from '@/components/ui'
+import { BarButton, ColorButton, Divider, IconButton, Popover, SliderRow } from '@/components/ui'
 import { FONT_BY_FAMILY, FONTS, nearestWeight, WEIGHT_NAMES } from '@/lib/fonts'
 import type { BannerElement, IconElement, ImageElement, ShapeElement, TextElement } from '@/lib/types'
 import { clamp, round } from '@/lib/util'
 import { selectedElements, useEditor } from '@/store/editor'
+import { toast } from '@/store/toasts'
 
 const GROUPS = ['Sans', 'Display', 'Serif', 'Mono & hand'] as const
 
@@ -27,7 +27,7 @@ function Dropdown({ value, onChange, label, width, children, display }: { value:
         <ChevronDown className="size-3.5 shrink-0 text-subtle" />
       </Select.Trigger>
       <Select.Portal>
-        <Select.Content position="popper" sideOffset={10} className="z-50 max-h-[min(420px,var(--radix-select-content-available-height))] min-w-[var(--radix-select-trigger-width)] animate-pop overflow-hidden rounded-xl bg-raised shadow-pop">
+        <Select.Content position="popper" sideOffset={10} className="z-50 max-h-[min(420px,var(--radix-select-content-available-height))] min-w-[var(--radix-select-trigger-width)] animate-pop overflow-hidden rounded-xl bg-pop shadow-pop">
           <Select.Viewport className="p-1.5">{children}</Select.Viewport>
         </Select.Content>
       </Select.Portal>
@@ -83,8 +83,6 @@ function TextControls({ el }: { el: TextElement }) {
   const patch = (changes: Partial<TextElement>, key?: string) => useEditor.getState().patchElements([el.id], changes, key && `${key}:${el.id}`)
   const font = FONT_BY_FAMILY.get(el.fontFamily)
   const colors = useDocColors()
-  const aligns = { left: AlignLeft, center: AlignCenter, right: AlignRight }
-  const AlignIcon = aligns[el.align]
   return (
     <>
       <Dropdown
@@ -123,21 +121,33 @@ function TextControls({ el }: { el: TextElement }) {
       <IconButton label="Uppercase" active={el.uppercase} onClick={() => patch({ uppercase: !el.uppercase })}>
         <CaseUpper />
       </IconButton>
-      <IconButton label={`Align ${el.align}`} onClick={() => patch({ align: el.align === 'left' ? 'center' : el.align === 'center' ? 'right' : 'left' })}>
-        <AlignIcon />
-      </IconButton>
-      <Popover
-        trigger={
-          <IconButton label="Spacing">
-            <LetterText />
+      <div role="radiogroup" aria-label="Text alignment" className="flex">
+        {(
+          [
+            ['left', AlignLeft],
+            ['center', AlignCenter],
+            ['right', AlignRight],
+          ] as const
+        ).map(([align, Icon]) => (
+          <IconButton key={align} role="radio" aria-checked={el.align === align} label={`Align ${align}`} active={el.align === align} onClick={() => patch({ align })}>
+            <Icon />
           </IconButton>
-        }
-        className="w-56 space-y-3"
-      >
+        ))}
+      </div>
+      <Popover trigger={<BarButton>Spacing</BarButton>} className="w-56 space-y-3">
         <SliderRow label="Letter spacing" value={el.letterSpacing} min={-6} max={24} step={0.5} onChange={(letterSpacing) => patch({ letterSpacing }, 'ls')} />
         <SliderRow label="Line height" value={el.lineHeight} min={0.8} max={2.2} step={0.05} format={(v) => v.toFixed(2)} onChange={(lineHeight) => patch({ lineHeight }, 'lh')} />
       </Popover>
     </>
+  )
+}
+
+function CornerControl({ el }: { el: ShapeElement | ImageElement }) {
+  const max = Math.max(1, Math.round(Math.min(el.width, el.height) / 2))
+  return (
+    <Popover trigger={<BarButton>Corners</BarButton>} className="w-56">
+      <SliderRow label="Corner radius" value={Math.min(el.radius, max)} min={0} max={max} onChange={(radius) => useEditor.getState().patchElements([el.id], { radius }, `radius:${el.id}`)} />
+    </Popover>
   )
 }
 
@@ -155,42 +165,23 @@ function ShapeControls({ el }: { el: ShapeElement }) {
         allowNone
         extra={colors}
         onChange={(stroke) => patch({ stroke, strokeWidth: stroke && !el.strokeWidth ? 3 : el.strokeWidth }, 'stroke')}
-      />
-      {(el.stroke || el.shape === 'rect') && (
-        <Popover
-          trigger={
-            <IconButton label="Outline & corners">
-              <Spline />
-            </IconButton>
-          }
-          className="w-56 space-y-3"
-        >
-          {el.stroke && <SliderRow label="Outline width" value={el.strokeWidth} min={0.5} max={24} step={0.5} onChange={(strokeWidth) => patch({ strokeWidth }, 'sw')} />}
-          {el.shape === 'rect' && (
-            <SliderRow label="Corner radius" value={Math.min(el.radius, Math.round(Math.min(el.width, el.height) / 2))} min={0} max={Math.max(1, Math.round(Math.min(el.width, el.height) / 2))} onChange={(radius) => patch({ radius }, 'radius')} />
-          )}
-        </Popover>
-      )}
+      >
+        {el.stroke ? (
+          <SliderRow label="Outline width" value={el.strokeWidth} min={0.5} max={24} step={0.5} onChange={(strokeWidth) => patch({ strokeWidth }, 'sw')} />
+        ) : (
+          <p className="text-xs text-subtle">Pick a colour to add an outline.</p>
+        )}
+      </ColorButton>
+      {el.shape === 'rect' && <CornerControl el={el} />}
     </>
   )
 }
 
 function ImageControls({ el }: { el: ImageElement }) {
-  const max = Math.max(1, Math.round(Math.min(el.width, el.height) / 2))
   return (
     <>
-      <Popover
-        trigger={
-          <IconButton label="Rounded corners">
-            <Spline />
-          </IconButton>
-        }
-        className="w-56"
-      >
-        <SliderRow label="Corner radius" value={Math.min(el.radius, max)} min={0} max={max} onChange={(radius) => useEditor.getState().patchElements([el.id], { radius }, `radius:${el.id}`)} />
-      </Popover>
-      <IconButton
-        label="Use as background"
+      <CornerControl el={el} />
+      <BarButton
         onClick={() => {
           const editor = useEditor.getState()
           editor.select([])
@@ -199,10 +190,11 @@ function ImageControls({ el }: { el: ImageElement }) {
             background: { ...doc.background, image: { assetId: el.assetId, opacity: 1 } },
             elements: doc.elements.filter((item) => item.id !== el.id),
           }))
+          toast('Photo set as background', { action: { label: 'Undo', run: () => useEditor.getState().undo() } })
         }}
       >
-        <PaintBucket />
-      </IconButton>
+        <PaintBucket /> Set as background
+      </BarButton>
     </>
   )
 }
@@ -211,19 +203,9 @@ function IconControls({ el }: { el: IconElement }) {
   const colors = useDocColors()
   const patch = (changes: Partial<IconElement>, key: string) => useEditor.getState().patchElements([el.id], changes, `${key}:${el.id}`)
   return (
-    <>
-      <ColorButton label="Icon colour" value={el.color} extra={colors} onChange={(color) => color && patch({ color }, 'fill')} />
-      <Popover
-        trigger={
-          <IconButton label="Line weight">
-            <Spline />
-          </IconButton>
-        }
-        className="w-56"
-      >
-        <SliderRow label="Line weight" value={el.strokeWidth} min={0.75} max={3} step={0.25} onChange={(strokeWidth) => patch({ strokeWidth }, 'sw')} />
-      </Popover>
-    </>
+    <ColorButton label="Icon colour" value={el.color} extra={colors} onChange={(color) => color && patch({ color }, 'fill')}>
+      <SliderRow label="Line weight" value={el.strokeWidth} min={0.75} max={3} step={0.25} onChange={(strokeWidth) => patch({ strokeWidth }, 'sw')} />
+    </ColorButton>
   )
 }
 
@@ -244,14 +226,7 @@ function CommonControls({ elements }: { elements: BannerElement[] }) {
   const mod = navigator.platform.includes('Mac') ? '⌘' : 'Ctrl+'
   return (
     <>
-      <Popover
-        trigger={
-          <IconButton label="Position">
-            <Layers />
-          </IconButton>
-        }
-        className="w-60"
-      >
+      <Popover trigger={<BarButton>Position</BarButton>} className="w-60">
         <p className="mb-2 text-xs text-muted">{elements.length > 1 ? 'Align to each other' : 'Align to banner'}</p>
         <div className="grid grid-cols-3 gap-1">
           {ALIGNS.map(({ mode, label, icon: Icon }) => (
@@ -278,9 +253,9 @@ function CommonControls({ elements }: { elements: BannerElement[] }) {
       </Popover>
       <Popover
         trigger={
-          <IconButton label="Opacity">
-            <Blend />
-          </IconButton>
+          <BarButton aria-label="Opacity">
+            <Droplet /> <span className="tabular-nums">{Math.round(opacity * 100)}%</span>
+          </BarButton>
         }
         className="w-56"
       >

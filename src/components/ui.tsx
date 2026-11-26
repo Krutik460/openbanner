@@ -2,7 +2,7 @@ import { forwardRef, useEffect, useState, type ButtonHTMLAttributes, type ReactN
 import clsx from 'clsx'
 import { Popover as RPopover, Slider as RSlider, Tooltip as RTooltip } from 'radix-ui'
 import { HexColorPicker } from 'react-colorful'
-import { Ban } from 'lucide-react'
+import { Ban, Pipette } from 'lucide-react'
 import { APP_NAME } from '@/lib/constants'
 
 export function Logo({ className, compact }: { className?: string; compact?: boolean }) {
@@ -10,7 +10,7 @@ export function Logo({ className, compact }: { className?: string; compact?: boo
     <span className={clsx('inline-flex items-center gap-2 font-semibold tracking-tight', className)}>
       <svg viewBox="0 0 28 22" className="h-[18px] w-auto" aria-hidden>
         <rect x="0" y="0" width="28" height="14" rx="4" fill="var(--color-accent)" />
-        <circle cx="8.5" cy="14" r="7" fill="var(--color-app)" />
+        <circle cx="8.5" cy="14" r="7" fill="var(--color-panel)" />
         <circle cx="8.5" cy="14" r="4.4" fill="var(--color-fg)" />
       </svg>
       <span className={clsx(compact && 'max-sm:hidden')}>{APP_NAME}</span>
@@ -36,8 +36,8 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
         size === 'sm' && 'h-7 px-2.5 text-xs',
         size === 'md' && 'h-8 px-3 text-[13px]',
         size === 'lg' && 'h-12 rounded-xl px-5 text-[15px]',
-        variant === 'primary' && 'bg-accent text-accent-ink hover:bg-[#d6fa6a]',
-        variant === 'secondary' && 'border border-line bg-raised text-fg hover:border-line-strong hover:bg-hover',
+        variant === 'primary' && 'bg-accent text-accent-ink hover:bg-[#bceb38]',
+        variant === 'secondary' && 'border border-line-strong bg-panel text-fg hover:bg-raised',
         variant === 'ghost' && 'text-muted hover:bg-hover hover:text-fg',
         className,
       )}
@@ -54,10 +54,10 @@ export function Tooltip({ label, shortcut, side = 'bottom', children }: { label:
         <RTooltip.Content
           side={side}
           sideOffset={8}
-          className="z-50 flex animate-pop items-center gap-2 rounded-md bg-[#2a2a2f] px-2 py-1 text-xs text-fg shadow-pop"
+          className="z-50 flex animate-pop items-center gap-2 rounded-md bg-fg px-2 py-1 text-xs text-white shadow-pop"
         >
           {label}
-          {shortcut && <kbd className="font-sans text-[11px] text-subtle">{shortcut}</kbd>}
+          {shortcut && <kbd className="font-sans text-[11px] text-white/55">{shortcut}</kbd>}
         </RTooltip.Content>
       </RTooltip.Portal>
     </RTooltip.Root>
@@ -105,7 +105,7 @@ export function Popover({ trigger, children, align = 'center', side = 'bottom', 
           side={side}
           sideOffset={10}
           collisionPadding={12}
-          className={clsx('z-40 animate-pop rounded-xl bg-raised p-3 shadow-pop outline-none', className)}
+          className={clsx('z-40 animate-pop rounded-xl bg-pop p-3 shadow-pop outline-none', className)}
         >
           {children}
         </RPopover.Content>
@@ -128,7 +128,7 @@ export function Slider({ value, min, max, step = 1, onChange, label }: { value: 
       <RSlider.Track className="relative h-1 grow rounded-full bg-active">
         <RSlider.Range className="absolute h-full rounded-full bg-fg" />
       </RSlider.Track>
-      <RSlider.Thumb className="block size-3.5 rounded-full bg-fg shadow-[0_1px_4px_rgb(0_0_0/0.5)] transition-transform hover:scale-110" />
+      <RSlider.Thumb className="block size-3.5 rounded-full bg-fg shadow-[0_1px_3px_rgb(0_0_0/0.3)] transition-transform hover:scale-110" />
     </RSlider.Root>
   )
 }
@@ -148,7 +148,7 @@ export function SliderRow({ label, value, format = (v) => String(v), ...slider }
 
 export function Segmented<T extends string>({ value, options, onChange, label, className }: { value: T; options: { value: T; label: ReactNode; title?: string }[]; onChange: (value: T) => void; label: string; className?: string }) {
   return (
-    <div role="radiogroup" aria-label={label} className={clsx('inline-flex rounded-lg bg-app p-0.5', className)}>
+    <div role="radiogroup" aria-label={label} className={clsx('inline-flex rounded-lg bg-raised p-0.5', className)}>
       {options.map((option) => (
         <button
           key={option.value}
@@ -160,7 +160,7 @@ export function Segmented<T extends string>({ value, options, onChange, label, c
           onClick={() => onChange(option.value)}
           className={clsx(
             'inline-flex h-7 flex-1 items-center justify-center gap-1.5 rounded-md px-2.5 text-xs font-medium transition-colors [&_svg]:size-3.5',
-            option.value === value ? 'bg-active text-fg shadow-[0_1px_2px_rgb(0_0_0/0.4)]' : 'text-muted hover:text-fg',
+            option.value === value ? 'bg-panel text-fg shadow-[0_0_0_1px_rgb(0_0_0/0.06),0_1px_2px_rgb(0_0_0/0.12)]' : 'text-muted hover:text-fg',
           )}
         >
           {option.label}
@@ -209,6 +209,23 @@ export function ColorPanel({ value, onChange, allowNone, extra }: { value: strin
             className="w-full bg-transparent pl-1 font-mono text-xs uppercase"
           />
         </div>
+        {'EyeDropper' in window && (
+          <Tooltip label="Pick a colour from the screen">
+            <button
+              type="button"
+              aria-label="Pick a colour from the screen"
+              onClick={() =>
+                new (window as unknown as { EyeDropper: new () => { open: () => Promise<{ sRGBHex: string }> } }).EyeDropper()
+                  .open()
+                  .then((result) => onChange(toHex(result.sRGBHex)))
+                  .catch(() => {})
+              }
+              className="inline-flex size-8 shrink-0 items-center justify-center rounded-lg border border-line text-muted hover:text-fg"
+            >
+              <Pipette className="size-4" />
+            </button>
+          </Tooltip>
+        )}
         {allowNone && (
           <Tooltip label="No colour">
             <button
@@ -230,7 +247,7 @@ export function ColorPanel({ value, onChange, allowNone, extra }: { value: strin
             type="button"
             aria-label={swatch}
             onClick={() => onChange(swatch)}
-            className={clsx('aspect-square rounded-md ring-1 ring-white/10 transition-transform hover:scale-110', swatch === hex && value !== null && 'outline-2 outline-offset-1 outline-fg')}
+            className={clsx('aspect-square rounded-md ring-1 ring-black/10 transition-transform hover:scale-110', swatch === hex && value !== null && 'outline-2 outline-offset-1 outline-fg')}
             style={{ background: swatch }}
           />
         ))}
@@ -240,33 +257,50 @@ export function ColorPanel({ value, onChange, allowNone, extra }: { value: strin
 }
 
 /** A swatch that opens the colour panel. */
-export function ColorButton({ value, onChange, label, allowNone, extra, variant = 'fill' }: { value: string | null; onChange: (value: string | null) => void; label: string; allowNone?: boolean; extra?: string[]; variant?: 'fill' | 'stroke' }) {
+export function ColorButton({ value, onChange, label, allowNone, extra, variant = 'fill', children }: { value: string | null; onChange: (value: string | null) => void; label: string; allowNone?: boolean; extra?: string[]; variant?: 'fill' | 'stroke'; children?: ReactNode }) {
   return (
     <Popover
       trigger={
-        <button
-          type="button"
-          aria-label={label}
-          title={label}
-          className="inline-flex size-8 shrink-0 items-center justify-center rounded-lg transition-colors hover:bg-hover data-[state=open]:bg-active"
-        >
+        <IconButton label={label} className="data-[state=open]:bg-active">
           <span
-            className="relative block size-[18px] overflow-hidden rounded-full ring-1 ring-white/25"
+            className="relative block size-[18px] overflow-hidden rounded-full ring-1 ring-black/15"
             style={
               value === null
-                ? { background: 'linear-gradient(135deg, transparent 46%, #ff6b6b 46%, #ff6b6b 54%, transparent 54%), #2a2a2f' }
+                ? { background: 'linear-gradient(135deg, transparent 46%, #ff6b6b 46%, #ff6b6b 54%, transparent 54%), #ffffff' }
                 : variant === 'stroke'
                   ? { boxShadow: `inset 0 0 0 4px ${value}`, background: 'transparent' }
                   : { background: value }
             }
           />
-        </button>
+        </IconButton>
       }
     >
+      <p className="mb-2.5 text-xs font-medium text-muted">{label}</p>
       <ColorPanel value={value} onChange={onChange} allowNone={allowNone} extra={extra} />
+      {children && <div className="mt-3 w-[216px] border-t border-line pt-3">{children}</div>}
     </Popover>
   )
 }
+
+/** A toolbar button with a word on it, for actions an icon alone would not explain. */
+export const BarButton = forwardRef<HTMLButtonElement, ButtonHTMLAttributes<HTMLButtonElement>>(function BarButton(
+  { className, children, ...props },
+  ref,
+) {
+  return (
+    <button
+      ref={ref}
+      type="button"
+      className={clsx(
+        'inline-flex h-8 shrink-0 items-center gap-1.5 rounded-lg px-2.5 text-[13px] whitespace-nowrap text-muted transition-colors hover:bg-hover hover:text-fg data-[state=open]:bg-active data-[state=open]:text-fg [&_svg]:size-4',
+        className,
+      )}
+      {...props}
+    >
+      {children}
+    </button>
+  )
+})
 
 export function Divider({ className }: { className?: string }) {
   return <span aria-hidden className={clsx('mx-1 h-5 w-px shrink-0 bg-line', className)} />

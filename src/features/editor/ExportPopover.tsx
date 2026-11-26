@@ -4,6 +4,7 @@ import { Button, Popover, Segmented } from '@/components/ui'
 import { BANNER } from '@/lib/constants'
 import { downloadBlob, exportBanner, fileSlug, formatBytes, type ExportFormat } from '@/lib/export'
 import { useEditor } from '@/store/editor'
+import { toast } from '@/store/toasts'
 
 /** LinkedIn rejects banner uploads above 8 MB. */
 const LINKEDIN_LIMIT = 8_000_000
@@ -35,10 +36,17 @@ function ExportForm() {
       const png = format === 'png' && blob ? blob : await exportBanner('png', Number(ratio))
       await navigator.clipboard.write([new ClipboardItem({ 'image/png': png })])
       setCopied(true)
+      toast('Banner copied to clipboard')
       setTimeout(() => setCopied(false), 1600)
     } catch {
       setError(true)
     }
+  }
+
+  const download = () => {
+    if (!blob) return
+    downloadBlob(blob, `${fileSlug(doc.name)}-linkedin-banner.${format === 'png' ? 'png' : 'jpg'}`)
+    toast('Banner downloaded. Upload it from the camera icon on your LinkedIn profile.')
   }
 
   const tooBig = blob !== null && blob.size > LINKEDIN_LIMIT
@@ -46,7 +54,7 @@ function ExportForm() {
     <div className="w-72 space-y-4 p-1">
       <div>
         <h2 className="text-sm font-semibold">Download banner</h2>
-        <p className="mt-0.5 text-xs text-subtle">No watermark. It’s yours.</p>
+        <p className="mt-0.5 text-xs text-subtle">Free, no watermark, no sign-up.</p>
       </div>
       <div className="space-y-2">
         <Segmented
@@ -82,11 +90,11 @@ function ExportForm() {
         )}
       </p>
       <div className="flex gap-2">
-        <Button variant="primary" className="h-10 flex-1" disabled={!blob} onClick={() => blob && downloadBlob(blob, `${fileSlug(doc.name)}-linkedin-banner.${format === 'png' ? 'png' : 'jpg'}`)}>
+        <Button variant="primary" className="h-10 flex-1" disabled={!blob} onClick={download}>
           <Download className="size-4" /> Download
         </Button>
         <Button className="h-10" onClick={copy} aria-label="Copy image">
-          {copied ? <Check className="size-4 text-accent" /> : <ClipboardCopy className="size-4" />}
+          {copied ? <Check className="size-4 text-accent-strong" /> : <ClipboardCopy className="size-4" />}
         </Button>
       </div>
       <p className="border-t border-line pt-3 text-xs leading-relaxed text-subtle">

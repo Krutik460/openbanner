@@ -7,7 +7,11 @@ import { IconButton, Popover } from '@/components/ui'
 import { useEditor, type PanelId } from '@/store/editor'
 import { useView } from '@/store/view'
 import { addImageFiles } from './actions'
+import { Toaster } from '@/components/Toaster'
+import { toast } from '@/store/toasts'
 import { ContextBar } from './ContextBar'
+import { CoverageWarning } from './CoverageWarning'
+import { Hint } from './Hint'
 import { BackgroundPanel } from './panels/BackgroundPanel'
 import { DesignsPanel } from './panels/DesignsPanel'
 import { ElementsPanel } from './panels/ElementsPanel'
@@ -32,7 +36,7 @@ const PANELS: { id: PanelId; label: string; icon: typeof Type; view: () => React
 const isMac = navigator.platform.includes('Mac')
 const MOD = isMac ? '⌘' : 'Ctrl'
 const SHORTCUTS: [string, string][] = [
-  ['Edit text', 'Double-click'],
+  ['Edit text', 'Click selected text'],
   ['Undo / redo', `${MOD} Z / ${MOD} ⇧ Z`],
   ['Duplicate', `${MOD} D`],
   ['Copy / paste', `${MOD} C / ${MOD} V`],
@@ -198,15 +202,18 @@ export function Editor() {
             if (!hasFiles(e)) return
             e.preventDefault()
             setDropping(false)
-            void addImageFiles(e.dataTransfer.files)
+            void addImageFiles(e.dataTransfer.files).then((count) => count === 0 && toast('Only image files can be added', { tone: 'error' }))
           }}
         >
           <ProfileMock />
           <EditorStage />
           <ContextBar />
+          <Hint />
+          <CoverageWarning />
           <ViewBar />
+          <Toaster />
           {dropping && (
-            <div className="pointer-events-none absolute inset-3 z-30 flex items-center justify-center rounded-2xl border-2 border-dashed border-accent bg-accent/10 text-base font-medium backdrop-blur-sm">
+            <div className="pointer-events-none absolute inset-3 z-30 flex items-center justify-center rounded-2xl border-2 border-dashed border-accent-strong bg-accent/25 text-base font-medium backdrop-blur-sm">
               Drop to add to your banner
             </div>
           )}

@@ -59,7 +59,7 @@ export function DesignsPanel() {
                 type="button"
                 disabled={open}
                 onClick={() => leaveFor(doc)}
-                className={clsx('block w-full overflow-hidden rounded-lg ring-1 transition-shadow', open ? 'ring-2 ring-accent' : 'ring-line hover:ring-2 hover:ring-fg/60')}
+                className={clsx('block w-full overflow-hidden rounded-lg ring-1 transition-shadow', open ? 'ring-2 ring-fg' : 'ring-line hover:ring-2 hover:ring-fg/60')}
               >
                 <StaticBanner doc={doc} width={280} />
               </button>

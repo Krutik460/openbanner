@@ -12,7 +12,8 @@ import { useView } from '@/store/view'
 function previewHeight(device: Device, cardHeight: number): number {
   const a = AVATAR[device]
   const peek = a.y + a.d + 330
-  return device === 'desktop' && cardHeight > 0 ? cardHeight : peek
+  // The card fades out over its last stretch, which does not need to fit.
+  return device === 'desktop' && cardHeight > 0 ? cardHeight - 110 : peek
 }
 
 /** Centres the banner (and the visible part of the profile card) in the workspace. */
@@ -20,7 +21,7 @@ export function fitView(): void {
   const { width, height, cardHeight } = useView.getState()
   if (!width || !height) return
   const { device, showProfile } = useEditor.getState()
-  const pad = { x: width < 700 ? 20 : 72, top: 84, bottom: 96 }
+  const pad = { x: width < 700 ? 16 : 44, top: 92, bottom: 84 }
   const contentH = showProfile ? previewHeight(device, cardHeight) : BANNER.height
   const scale = clamp(
     Math.min((width - pad.x * 2) / BANNER.width, (height - pad.top - pad.bottom) / contentH),

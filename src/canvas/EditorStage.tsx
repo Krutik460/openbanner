@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { ContextMenu } from 'radix-ui'
 import { Circle, Group, Image as KImage, Layer, Line, Rect, Stage, Text, Transformer } from 'react-konva'
 import type Konva from 'konva'
 import type { KonvaEventObject } from 'konva/lib/Node'
@@ -11,11 +12,12 @@ import { BackgroundNodes, ElementNode, type NodeBinder } from './BannerScene'
 import { fitView } from './fit'
 import { registerContent } from './registry'
 import { snap, snapTargets, type Box, type Guide } from './snapping'
+import { CanvasMenu } from './CanvasMenu'
 import { TextEditor } from './TextEditor'
 import { useImage } from './useImage'
 
 const { width: W, height: H } = BANNER
-const SELECT = '#4C9DFF'
+const SELECT = '#2F7BF5'
 const SNAP_PX = 6
 /** Corner radius of the profile card on LinkedIn's desktop layout, in banner pixels. */
 const CARD_RADIUS = 16
@@ -123,6 +125,7 @@ export function EditorStage() {
   const [interacting, setInteracting] = useState(false)
   const [hoverId, setHoverId] = useState<string | null>(null)
   const [marquee, setMarquee] = useState<Box | null>(null)
+  const [badge, setBadge] = useState<{ text: string; x: number; y: number } | null>(null)
   const [spaceDown, setSpaceDown] = useState(false)
   const [panning, setPanning] = useState(false)
 
@@ -130,6 +133,8 @@ export function EditorStage() {
   const targets = useRef<{ x: number[]; y: number[] } | null>(null)
   const marqueeStart = useRef<{ x: number; y: number; additive: boolean } | null>(null)
   const marqueeBox = useRef<Box | null>(null)
+  /** A text element that was already selected when pressed: releasing without dragging starts editing it. */
+  const editCandidate = useRef<string | null>(null)
 
   const findNode = useCallback(
     (id: string) => contentRef.current?.findOne((node: Konva.Node) => node.id() === id),
@@ -258,6 +263,8 @@ export function EditorStage() {
     const additive = 'shiftKey' in e.evt && (e.evt.shiftKey || e.evt.metaKey || e.evt.ctrlKey)
 
     if (isElementNode(node)) {
+      const alreadySole = editor.selection.length === 1 && editor.selection[0] === node.id()
+      editCandidate.current = !additive && alreadySole && node.getClassName() === 'Text' ? node.id() : null
       if (additive) editor.toggleSelect(node.id())
       else if (!editor.selection.includes(node.id())) editor.select([node.id()])
       return
@@ -316,6 +323,7 @@ export function EditorStage() {
     const node = e.target
     if (!isElementNode(node) || dragLead.current) return
     dragLead.current = node
+    editCandidate.current = null
     marqueeStart.current = null
     setInteracting(true)
     const { selection: current, doc: currentDoc } = useEditor.getState()
@@ -360,13 +368,26 @@ export function EditorStage() {
   // --- resize / rotate ------------------------------------------------------
   const onTransform = () => {
     const tr = trRef.current!
-    if (!SIDE_ANCHORS.includes(tr.getActiveAnchor() ?? '')) return
-    // Dragging a text box's side re-wraps it instead of stretching the letters.
-    for (const node of tr.nodes()) {
-      if (node.getClassName() === 'Text') {
-        node.setAttrs({ width: Math.max(24, node.width() * node.scaleX()), scaleX: 1, scaleY: 1 })
+    const anchor = tr.getActiveAnchor() ?? ''
+    if (SIDE_ANCHORS.includes(anchor)) {
+      // Dragging a text box's side re-wraps it instead of stretching the letters.
+      for (const node of tr.nodes()) {
+        if (node.getClassName() === 'Text') {
+          node.setAttrs({ width: Math.max(24, node.width() * node.scaleX()), scaleX: 1, scaleY: 1 })
+        }
       }
     }
+    // A small readout under the frame: the angle while rotating, the size while resizing.
+    const [node] = tr.nodes()
+    if (!node) return
+    const frame = tr.getClientRect()
+    const text =
+      anchor === 'rotater'
+        ? `${Math.round(((node.rotation() % 360) + 360) % 360)}°`
+        : tr.nodes().length === 1
+          ? `${Math.round(node.width() * node.scaleX())} × ${Math.round(node.height() * node.scaleY())}`
+          : null
+    setBadge(text ? { text, x: frame.x + frame.width / 2, y: frame.y + frame.height + 10 } : null)
   }
 
   const onTransformEnd = () => {
@@ -401,6 +422,17 @@ export function EditorStage() {
     }
     patchElements([...patches.keys()], (el) => patches.get(el.id) ?? {})
     setInteracting(false)
+    setBadge(null)
+  }
+
+  // Right-click acts on what is under the pointer, like every other design tool.
+  const onContextMenu = (e: KonvaEventObject<PointerEvent>) => {
+    const editor = useEditor.getState()
+    if (isElementNode(e.target)) {
+      if (!editor.selection.includes(e.target.id())) editor.select([e.target.id()])
+    } else if (!e.target.findAncestor('Transformer')) {
+      editor.select([])
+    }
   }
 
   const bind: NodeBinder = useCallback((el) => ({ draggable: !el.locked }), [])
@@ -416,7 +448,12 @@ export function EditorStage() {
   const cursor = panning ? 'grabbing' : spaceDown ? 'grab' : hoverId ? 'move' : 'default'
 
   return (
+    <ContextMenu.Root>
+      <ContextMenu.Trigger asChild>
     <div ref={hostRef} className="absolute inset-0 touch-none overflow-hidden" style={{ cursor }} onPointerDown={(e) => e.button === 1 && startPan(e)}>
+      <p className="pointer-events-none absolute text-[11px] whitespace-nowrap text-subtle" style={{ left: view.x, top: view.y - 24 }}>
+        LinkedIn banner <span className="mx-1 opacity-50">·</span> {W} × {H} px
+      </p>
       <Stage
         ref={stageRef}
         width={view.width || 1}
@@ -425,6 +462,7 @@ export function EditorStage() {
         onTouchStart={onStageDown}
         onMouseMove={onStageMove}
         onTouchMove={onStageMove}
+        onContextMenu={onContextMenu}
       >
         <Layer>
           <Group
@@ -451,6 +489,10 @@ export function EditorStage() {
               onDragEnd={onDragEnd}
               onMouseOver={(e) => isElementNode(e.target) && setHoverId(e.target.id())}
               onMouseOut={() => setHoverId(null)}
+              onClick={(e) => {
+                if (editCandidate.current && e.target.id() === editCandidate.current) useEditor.getState().setEditing(e.target.id())
+                editCandidate.current = null
+              }}
               onDblClick={(e) => e.target.getClassName() === 'Text' && isElementNode(e.target) && useEditor.getState().setEditing(e.target.id())}
               onDblTap={(e) => e.target.getClassName() === 'Text' && isElementNode(e.target) && useEditor.getState().setEditing(e.target.id())}
             >
@@ -508,12 +550,29 @@ export function EditorStage() {
               <Line key={`y${guide.at}`} listening={false} points={[view.x - 24, view.y + guide.at * scale, view.x + W * scale + 24, view.y + guide.at * scale]} stroke="#FF4D8D" strokeWidth={1} />
             ),
           )}
-          {marquee && <Rect listening={false} {...marquee} fill="rgba(76, 157, 255, 0.12)" stroke={SELECT} strokeWidth={1} />}
+          {badge && (
+            <Group listening={false} x={badge.x - 42} y={badge.y}>
+              <Rect width={84} height={22} cornerRadius={6} fill={SELECT} />
+              <Text width={84} height={22} align="center" verticalAlign="middle" text={badge.text} fontFamily="Geist Variable" fontStyle="600" fontSize={11} fill="#FFFFFF" />
+            </Group>
+          )}
+          {marquee && <Rect listening={false} {...marquee} fill="rgba(47, 123, 245, 0.1)" stroke={SELECT} strokeWidth={1} />}
         </Layer>
       </Stage>
 
+      {doc.elements.length === 0 && (
+        <p
+          className="pointer-events-none absolute flex items-center justify-center text-center text-sm font-medium text-white/70 mix-blend-difference"
+          style={{ left: view.x + W * scale * 0.34, top: view.y, width: W * scale * 0.62, height: H * scale }}
+        >
+          Pick a template, or add text and elements from the left.
+        </p>
+      )}
       {editing?.type === 'text' && <TextEditor el={editing} />}
       {(spaceDown || panning) && <div className="absolute inset-0 z-30" onPointerDown={startPan} />}
     </div>
+      </ContextMenu.Trigger>
+      <CanvasMenu />
+    </ContextMenu.Root>
   )
 }
