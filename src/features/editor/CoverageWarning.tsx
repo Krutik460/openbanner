@@ -74,7 +74,7 @@ export function CoverageWarning() {
     <button
       type="button"
       onClick={() => useEditor.getState().setView({ showSafeZones: true })}
-      className="absolute bottom-16 left-1/2 z-10 flex h-8 -translate-x-1/2 animate-pop items-center gap-2 rounded-full border border-[#e0a800]/50 bg-[#fff6d6] pr-3 pl-2.5 text-xs whitespace-nowrap text-[#6b4e00] shadow-pop transition-colors hover:bg-[#ffefb8]"
+      className="absolute bottom-[84px] left-1/2 z-10 flex h-8 -translate-x-1/2 animate-pop items-center gap-2 rounded-full border border-[#e0a800]/50 bg-[#fff6d6] pr-3 pl-2.5 text-xs whitespace-nowrap text-[#6b4e00] shadow-pop transition-colors hover:bg-[#ffefb8]"
     >
       <EyeOff className="size-3.5" />
       {hidden.count === 1 ? '1 item is' : `${hidden.count} items are`} hidden behind your photo {hidden.where}

@@ -1,34 +1,32 @@
 @import 'tailwindcss';
 
 @theme {
-  --font-sans: 'Geist Variable', ui-sans-serif, system-ui, sans-serif;
-  --font-display: 'Instrument Serif', Georgia, serif;
+  --font-sans: 'Inter Variable', ui-sans-serif, system-ui, sans-serif;
   --font-mono: 'JetBrains Mono Variable', ui-monospace, monospace;
 
-  /* Surfaces. `app` is the page and inset wells, `panel` the bars and cards, `pop` anything floating. */
-  --color-app: #f7f7f4;
-  --color-canvas: #efeeea;
+  /* Plain surfaces: a white page, a light grey canvas, and white for anything that floats. */
+  --color-app: #ffffff;
+  --color-canvas: #f5f5f5;
   --color-panel: #ffffff;
   --color-pop: #ffffff;
-  --color-raised: #f3f3ef;
-  --color-hover: #ebebe6;
-  --color-active: #e2e2dc;
+  --color-raised: #f5f5f5;
+  --color-hover: #efefef;
+  --color-active: #e6e6e6;
 
-  --color-line: rgb(0 0 0 / 0.08);
+  --color-line: rgb(0 0 0 / 0.09);
   --color-line-strong: rgb(0 0 0 / 0.16);
 
-  --color-fg: #1a1a1e;
-  --color-muted: #62626b;
-  --color-subtle: #92929a;
+  --color-fg: #111111;
+  --color-muted: #5c5c5c;
+  --color-subtle: #8f8f8f;
 
-  /* One brand accent, used as a fill; `accent-strong` is its readable form for text and icons on white. */
-  --color-accent: #c8f24b;
-  --color-accent-ink: #1a1a1e;
-  --color-accent-strong: #4a7409;
-  --color-select: #2f7bf5;
-  --color-danger: #d92d20;
+  /* One blue, for the main action and for selection on the canvas. Everything else is black on white. */
+  --color-accent: #0f6fec;
+  --color-accent-ink: #ffffff;
+  --color-select: #0f6fec;
+  --color-danger: #e03131;
 
-  --shadow-pop: 0 0 0 1px rgb(0 0 0 / 0.07), 0 14px 36px -10px rgb(0 0 0 / 0.2), 0 4px 10px -4px rgb(0 0 0 / 0.08);
+  --shadow-pop: 0 0 0 1px rgb(0 0 0 / 0.08), 0 8px 24px -6px rgb(0 0 0 / 0.16), 0 2px 6px -2px rgb(0 0 0 / 0.08);
 
   --animate-pop: pop 140ms cubic-bezier(0.2, 0.8, 0.2, 1);
   --animate-rise: rise 600ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
@@ -48,7 +46,7 @@
 }
 
 :root {
-  --select: #2f7bf5;
+  --select: #0f6fec;
   color-scheme: light;
 }
 
@@ -91,7 +89,7 @@
   }
 
   ::selection {
-    background: rgb(200 242 75 / 0.6);
+    background: rgb(15 111 236 / 0.18);
   }
 
   * {
@@ -113,8 +111,6 @@
 /* The pasteboard behind the banner. */
 .workspace {
   background-color: var(--color-canvas);
-  background-image: radial-gradient(rgb(0 0 0 / 0.09) 1px, transparent 1px);
-  background-size: 22px 22px;
 }
 
 /* react-colorful, restyled to match. */

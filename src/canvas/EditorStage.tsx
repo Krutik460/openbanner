@@ -17,7 +17,7 @@ import { TextEditor } from './TextEditor'
 import { useImage } from './useImage'
 
 const { width: W, height: H } = BANNER
-const SELECT = '#2F7BF5'
+const SELECT = '#0F6FEC'
 const SNAP_PX = 6
 /** Corner radius of the profile card on LinkedIn's desktop layout, in banner pixels. */
 const CARD_RADIUS = 16
@@ -239,9 +239,11 @@ export function EditorStage() {
     tr.nodes(nodes)
     tr.forceUpdate()
     tr.getLayer()?.batchDraw()
-    // `doc` is a dependency so the frame follows edits made from the panels (font size, text, ...).
+    // Tell the floating toolbar where the selection is on screen.
+    useView.getState().set({ frame: nodes.length ? tr.getClientRect() : null })
+    // `doc` is a dependency so the frame follows edits made from the toolbar (font size, text, ...).
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selection, editingId, doc, findNode])
+  }, [selection, editingId, doc, findNode, view.x, view.y, scale])
 
   // Fonts finishing loading change text sizes after layout; keep the frame in step.
   useEffect(() => {
@@ -250,6 +252,7 @@ export function EditorStage() {
       trRef.current?.getLayer()?.batchDraw()
     }
     document.fonts.addEventListener('loadingdone', refresh)
+    // (the published frame catches up on the next edit; a font swap rarely moves it far)
     return () => document.fonts.removeEventListener('loadingdone', refresh)
   }, [])
 
@@ -324,6 +327,7 @@ export function EditorStage() {
     if (!isElementNode(node) || dragLead.current) return
     dragLead.current = node
     editCandidate.current = null
+    useView.getState().set({ frame: null })
     marqueeStart.current = null
     setInteracting(true)
     const { selection: current, doc: currentDoc } = useEditor.getState()
@@ -539,7 +543,7 @@ export function EditorStage() {
             borderStrokeWidth={1.5}
             anchorStyleFunc={styleAnchor}
             boundBoxFunc={(oldBox, newBox) => (Math.abs(newBox.width) < 8 || Math.abs(newBox.height) < 8 ? oldBox : newBox)}
-            onTransformStart={() => setInteracting(true)}
+            onTransformStart={() => (setInteracting(true), useView.getState().set({ frame: null }))}
             onTransform={onTransform}
             onTransformEnd={onTransformEnd}
           />
@@ -556,7 +560,7 @@ export function EditorStage() {
               <Text width={84} height={22} align="center" verticalAlign="middle" text={badge.text} fontFamily="Geist Variable" fontStyle="600" fontSize={11} fill="#FFFFFF" />
             </Group>
           )}
-          {marquee && <Rect listening={false} {...marquee} fill="rgba(47, 123, 245, 0.1)" stroke={SELECT} strokeWidth={1} />}
+          {marquee && <Rect listening={false} {...marquee} fill="rgba(15, 111, 236, 0.1)" stroke={SELECT} strokeWidth={1} />}
         </Layer>
       </Stage>
 

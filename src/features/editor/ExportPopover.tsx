@@ -94,7 +94,7 @@ function ExportForm() {
           <Download className="size-4" /> Download
         </Button>
         <Button className="h-10" onClick={copy} aria-label="Copy image">
-          {copied ? <Check className="size-4 text-accent-strong" /> : <ClipboardCopy className="size-4" />}
+          {copied ? <Check className="size-4 text-accent" /> : <ClipboardCopy className="size-4" />}
         </Button>
       </div>
       <p className="border-t border-line pt-3 text-xs leading-relaxed text-subtle">
@@ -110,7 +110,7 @@ export function ExportPopover() {
       align="end"
       trigger={
         <Button variant="primary">
-          <Download className="size-4" /> Export
+          <Download className="size-4" /> Download
         </Button>
       }
     >

@@ -7,11 +7,11 @@ import { APP_NAME } from '@/lib/constants'
 
 export function Logo({ className, compact }: { className?: string; compact?: boolean }) {
   return (
-    <span className={clsx('inline-flex items-center gap-2 font-semibold tracking-tight', className)}>
+    <span className={clsx('inline-flex items-center gap-2 font-bold tracking-tight', className)}>
       <svg viewBox="0 0 28 22" className="h-[18px] w-auto" aria-hidden>
-        <rect x="0" y="0" width="28" height="14" rx="4" fill="var(--color-accent)" />
+        <rect x="0" y="0" width="28" height="14" rx="4" fill="var(--color-fg)" />
         <circle cx="8.5" cy="14" r="7" fill="var(--color-panel)" />
-        <circle cx="8.5" cy="14" r="4.4" fill="var(--color-fg)" />
+        <circle cx="8.5" cy="14" r="4.4" fill="var(--color-accent)" />
       </svg>
       <span className={clsx(compact && 'max-sm:hidden')}>{APP_NAME}</span>
     </span>
@@ -35,8 +35,8 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
         'inline-flex shrink-0 items-center justify-center gap-1.5 rounded-lg font-medium whitespace-nowrap transition-[background-color,border-color,color,transform] duration-150 select-none active:scale-[0.98] disabled:pointer-events-none disabled:opacity-45',
         size === 'sm' && 'h-7 px-2.5 text-xs',
         size === 'md' && 'h-8 px-3 text-[13px]',
-        size === 'lg' && 'h-12 rounded-xl px-5 text-[15px]',
-        variant === 'primary' && 'bg-accent text-accent-ink hover:bg-[#bceb38]',
+        size === 'lg' && 'h-12 rounded-[10px] px-5 text-[15px] font-semibold',
+        variant === 'primary' && 'bg-accent text-accent-ink hover:bg-[#0b5fd0]',
         variant === 'secondary' && 'border border-line-strong bg-panel text-fg hover:bg-raised',
         variant === 'ghost' && 'text-muted hover:bg-hover hover:text-fg',
         className,

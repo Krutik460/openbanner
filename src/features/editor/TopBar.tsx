@@ -1,5 +1,4 @@
-import { useState } from 'react'
-import { CircleAlert, CloudCheck, LoaderCircle, Redo2, Undo2 } from 'lucide-react'
+import { CircleAlert, LoaderCircle, Lock, Redo2, Undo2 } from 'lucide-react'
 import { Divider, IconButton, Logo, Popover, Button } from '@/components/ui'
 import { useEditor } from '@/store/editor'
 import { rememberProfile } from '@/store/persistence'
@@ -17,31 +16,9 @@ function SaveStatus() {
   }
   return (
     <span className="flex items-center gap-1.5 text-xs text-subtle" aria-live="polite" title="Your design is stored only in this browser. Nothing is uploaded.">
-      {saveState === 'saving' ? <LoaderCircle className="size-3.5 animate-spin" /> : <CloudCheck className="size-3.5" />}
-      <span className="hidden lg:inline">{saveState === 'saving' ? 'Saving…' : 'Saved on this device'}</span>
+      {saveState === 'saving' ? <LoaderCircle className="size-3.5 animate-spin" /> : <Lock className="size-3.5" />}
+      <span className="max-sm:hidden">{saveState === 'saving' ? 'Saving…' : 'Saved on this device'}</span>
     </span>
-  )
-}
-
-function Title() {
-  const name = useEditor((s) => s.doc.name)
-  const rename = useEditor((s) => s.rename)
-  const [draft, setDraft] = useState<string | null>(null)
-  return (
-    <input
-      aria-label="Design name"
-      value={draft ?? name}
-      onFocus={(e) => (setDraft(name), e.target.select())}
-      onChange={(e) => setDraft(e.target.value)}
-      onBlur={() => {
-        const next = draft?.trim()
-        if (next && next !== name) rename(next)
-        setDraft(null)
-      }}
-      onKeyDown={(e) => (e.key === 'Enter' || e.key === 'Escape') && e.currentTarget.blur()}
-      size={Math.max(6, (draft ?? name).length)}
-      className="h-8 max-w-56 min-w-0 truncate rounded-lg max-sm:hidden border border-transparent bg-transparent px-2 text-[13px] font-medium transition-colors hover:border-line focus:border-line-strong focus:bg-app"
-    />
   )
 }
 
@@ -53,9 +30,8 @@ function ProfileMenu() {
       align="end"
       className="w-80"
       trigger={
-        <button type="button" aria-label="Your profile" className="flex h-8 items-center gap-2 rounded-full pr-2.5 pl-1 text-[13px] transition-colors hover:bg-hover data-[state=open]:bg-active">
-          <Avatar profile={profile} size={24} />
-          <span className="hidden max-w-28 truncate md:inline">{profile?.name.split(/\s+/)[0] || 'Add profile'}</span>
+        <button type="button" aria-label="Edit profile preview" title="Edit profile preview" className="mx-1 flex size-8 items-center justify-center rounded-full transition-shadow hover:ring-2 hover:ring-line-strong data-[state=open]:ring-2 data-[state=open]:ring-accent">
+          <Avatar profile={profile} size={28} />
         </button>
       }
     >
@@ -78,19 +54,17 @@ export function TopBar() {
   const canRedo = useEditor((s) => s.future.length > 0)
   const mod = navigator.platform.includes('Mac') ? '⌘' : 'Ctrl+'
   return (
-    <header className="flex h-[52px] shrink-0 items-center gap-2 border-b border-line bg-panel px-3">
-      <Logo compact className="mr-1 text-sm [&>svg]:h-4" />
-      <Divider className="max-sm:hidden" />
-      <Title />
-      <SaveStatus />
+    <header className="flex h-14 shrink-0 items-center gap-1.5 border-b border-line bg-panel px-4">
+      <Logo compact className="text-[15px]" />
       <div className="flex-1" />
+      <SaveStatus />
+      <Divider className="mx-2" />
       <IconButton label="Undo" shortcut={`${mod}Z`} disabled={!canUndo} onClick={() => useEditor.getState().undo()}>
         <Undo2 />
       </IconButton>
       <IconButton label="Redo" shortcut={`${mod}⇧Z`} disabled={!canRedo} onClick={() => useEditor.getState().redo()}>
         <Redo2 />
       </IconButton>
-      <Divider />
       <ProfileMenu />
       <ExportPopover />
     </header>

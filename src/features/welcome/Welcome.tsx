@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { ArrowLeft, ArrowRight, Check, Gift, LoaderCircle, Lock, Plus, ShieldCheck, TriangleAlert, UserRoundX } from 'lucide-react'
+import { ArrowLeft, ArrowRight, Check, Gift, LoaderCircle, Plus, ShieldCheck, TriangleAlert, UserRoundX } from 'lucide-react'
 import { StaticBanner } from '@/canvas/StaticBanner'
 import { Button, Logo } from '@/components/ui'
 import { AVATAR, BANNER, SAMPLE_PROFILE } from '@/lib/constants'
@@ -16,7 +16,7 @@ function ProfileCard({ doc, profile, width, className, quiet }: { doc: Pick<Bann
   const k = width / BANNER.width
   const a = AVATAR.desktop
   return (
-    <div className={`overflow-hidden rounded-xl bg-white text-left text-[#191919] ${className ?? ''}`} style={{ width }}>
+    <div className={`overflow-hidden rounded-xl bg-white text-left text-[#191919] ring-1 ring-black/10 ${className ?? ''}`} style={{ width }}>
       <div className="relative">
         <StaticBanner doc={doc} width={width} />
         <div className="absolute rounded-full bg-white" style={{ left: a.x * k, top: a.y * k, padding: a.ring * k }}>
@@ -85,26 +85,16 @@ function Start({ onDone }: { onDone: (step: Step, profile: Profile) => void }) {
 
   return (
     <>
-      <div className="mx-auto flex w-full max-w-5xl flex-col items-center px-6 pt-[clamp(28px,6vh,80px)] text-center">
-        <ul className="flex animate-rise flex-wrap items-center justify-center gap-2 text-xs font-medium">
-          {['Free forever', 'No account', 'Private by design'].map((point) => (
-            <li key={point} className="flex h-7 items-center gap-1.5 rounded-full border border-line bg-panel pr-3 pl-2 shadow-[0_1px_2px_rgb(0_0_0/0.04)]">
-              <span className="flex size-4 items-center justify-center rounded-full bg-accent">
-                <Check className="size-3" strokeWidth={3} />
-              </span>
-              {point}
-            </li>
-          ))}
-        </ul>
-        <h1 className="mt-7 animate-rise text-[clamp(40px,7vw,84px)] leading-[0.98] font-semibold tracking-[-0.045em] text-balance [animation-delay:60ms]">
-          The banner your profile <Mark>deserves.</Mark>
+      <div className="mx-auto flex w-full max-w-4xl flex-col items-center px-6 pt-[clamp(40px,9vh,104px)] text-center">
+        <h1 className="animate-rise text-[clamp(38px,6.4vw,72px)] leading-[1.02] font-extrabold tracking-[-0.045em] text-balance">
+          The simplest way to make a LinkedIn banner
         </h1>
-        <p className="mt-6 max-w-[38rem] animate-rise text-[17px] leading-relaxed text-pretty text-muted [animation-delay:120ms]">
-          Design your LinkedIn banner on a live preview of your own profile. It’s free, there’s nothing to sign up for, and your work never leaves your browser.
+        <p className="mt-6 max-w-[34rem] animate-rise text-lg leading-relaxed text-pretty text-muted [animation-delay:60ms]">
+          Design it on a preview of your own profile. Free, no account, and your work never leaves your browser.
         </p>
 
-        <form onSubmit={submit} className="mt-9 w-full max-w-xl animate-rise [animation-delay:180ms]" noValidate>
-          <div className="flex items-center gap-2 rounded-2xl border border-line-strong bg-panel p-1.5 shadow-[0_1px_2px_rgb(0_0_0/0.04),0_16px_40px_-18px_rgb(0_0_0/0.25)] transition-colors focus-within:border-fg/45 max-sm:flex-col max-sm:items-stretch">
+        <form onSubmit={submit} className="mt-9 w-full max-w-[34rem] animate-rise [animation-delay:120ms]" noValidate>
+          <div className="flex gap-2 max-sm:flex-col">
             <label htmlFor="profile-url" className="sr-only">
               LinkedIn profile link
             </label>
@@ -119,16 +109,16 @@ function Start({ onDone }: { onDone: (step: Step, profile: Profile) => void }) {
               inputMode="url"
               aria-invalid={Boolean(error)}
               aria-describedby={error ? 'profile-url-error' : 'profile-url-note'}
-              className="h-12 min-w-0 flex-1 bg-transparent px-3.5 text-[15px] placeholder:text-subtle"
+              className="h-12 min-w-0 flex-1 rounded-[10px] border border-line-strong bg-panel px-4 text-[15px] transition-[border-color,box-shadow] placeholder:text-subtle focus:border-accent focus:shadow-[0_0_0_3px_rgb(15_111_236/0.15)]"
             />
-            <Button type="submit" variant="primary" size="lg" disabled={busy} className="min-w-[152px]">
+            <Button type="submit" variant="primary" size="lg" disabled={busy} className="min-w-[168px]">
               {busy ? (
                 <>
                   <LoaderCircle className="size-4 animate-spin" /> Looking you up
                 </>
               ) : (
                 <>
-                  Start designing <ArrowRight className="size-4" />
+                  Create my banner <ArrowRight className="size-4" />
                 </>
               )}
             </Button>
@@ -138,43 +128,39 @@ function Start({ onDone }: { onDone: (step: Step, profile: Profile) => void }) {
               {error}
             </p>
           ) : (
-            <p id="profile-url-note" className="mt-3 flex items-start justify-center gap-1.5 text-[13px] text-subtle">
-              <Lock className="mt-0.5 size-3.5 shrink-0" />
-              Used once to read your public name, headline and photo. Never stored.
+            <p id="profile-url-note" className="mt-3 text-sm text-subtle">
+              No signup required. Your link is used once and never stored.
             </p>
           )}
         </form>
 
-        <div className="mt-4 flex animate-rise flex-wrap items-center justify-center gap-x-5 gap-y-2 text-sm text-muted [animation-delay:240ms]">
-          <button type="button" className="underline decoration-line-strong underline-offset-4 transition-colors hover:text-fg" onClick={() => onDone({ name: 'setup', note: null }, existing ?? { name: '', headline: '' })}>
+        <p className="mt-3 animate-rise text-sm text-muted [animation-delay:180ms]">
+          <button type="button" className="font-medium text-fg underline decoration-line-strong underline-offset-4 hover:decoration-fg" onClick={() => onDone({ name: 'setup', note: null }, existing ?? { name: '', headline: '' })}>
             Start without a link
           </button>
-          <button type="button" className="underline decoration-line-strong underline-offset-4 transition-colors hover:text-fg" onClick={() => onDone({ name: 'setup', note: null }, sample)}>
-            Try a sample profile
+          <span className="mx-2 text-subtle">or</span>
+          <button type="button" className="font-medium text-fg underline decoration-line-strong underline-offset-4 hover:decoration-fg" onClick={() => onDone({ name: 'setup', note: null }, sample)}>
+            try a sample profile
           </button>
-        </div>
+        </p>
 
-        {/* Three real templates, rendered live on profile cards. */}
-        <div aria-hidden className="pointer-events-none relative mt-[clamp(40px,7vh,72px)] h-[340px] w-full max-w-4xl animate-rise [animation-delay:320ms] max-sm:hidden">
-          <ProfileCard doc={pick('editorial')} profile={sample} width={520} className="absolute top-10 left-0 -rotate-[5deg] shadow-[0_0_0_1px_rgb(0_0_0/0.06),0_30px_60px_-20px_rgb(0_0_0/0.3)]" />
-          <ProfileCard doc={pick('sunset')} profile={sample} width={520} className="absolute top-10 right-0 rotate-[5deg] shadow-[0_0_0_1px_rgb(0_0_0/0.06),0_30px_60px_-20px_rgb(0_0_0/0.3)]" />
-          <ProfileCard doc={pick('aurora')} profile={sample} width={640} className="absolute top-0 left-1/2 -translate-x-1/2 shadow-[0_0_0_1px_rgb(0_0_0/0.06),0_40px_80px_-24px_rgb(0_0_0/0.4)]" />
+        {/* One real template on a profile card: the whole idea in a picture. */}
+        <div aria-hidden className="pointer-events-none mt-[clamp(40px,7vh,72px)] w-full animate-rise [animation-delay:240ms] max-sm:hidden">
+          <ProfileCard doc={pick('aurora')} profile={sample} width={832} className="mx-auto shadow-[0_24px_60px_-28px_rgb(0_0_0/0.3)]" />
         </div>
       </div>
 
-      <section aria-label="Why Openbanner" className="mx-auto w-full max-w-5xl px-6 pt-14 pb-4">
-        <div className="grid gap-4 md:grid-cols-3">
+      <section aria-label="Why Openbanner" className="mx-auto w-full max-w-4xl px-6 pt-20 pb-6">
+        <div className="grid gap-x-10 gap-y-10 md:grid-cols-3">
           {PROMISES.map(({ icon: Icon, title, body }) => (
-            <div key={title} className="rounded-2xl border border-line bg-panel p-6">
-              <span className="flex size-10 items-center justify-center rounded-xl bg-accent">
-                <Icon className="size-5" strokeWidth={1.75} />
-              </span>
-              <h2 className="mt-5 text-lg font-semibold tracking-tight">{title}</h2>
-              <p className="mt-1.5 text-sm leading-relaxed text-muted">{body}</p>
+            <div key={title}>
+              <Icon className="size-6" strokeWidth={1.75} />
+              <h2 className="mt-4 text-[17px] font-bold tracking-tight">{title}</h2>
+              <p className="mt-1.5 text-[15px] leading-relaxed text-muted">{body}</p>
             </div>
           ))}
         </div>
-        <p className="mx-auto mt-6 max-w-2xl text-center text-[13px] leading-relaxed text-subtle">
+        <p className="mt-12 border-t border-line pt-6 text-sm leading-relaxed text-subtle">
           The one thing that touches a server: if you paste your profile link, we read your public LinkedIn page once to fill in your name, headline and photo. Nothing is saved, and you can skip it.
         </p>
       </section>
@@ -190,25 +176,15 @@ const PROMISES = [
   },
   {
     icon: UserRoundX,
-    title: 'No account',
+    title: 'No account needed',
     body: 'There is nothing to sign up for. Open the page and start. Come back later and your work is still here.',
   },
   {
     icon: ShieldCheck,
     title: 'Private by design',
-    body: 'Designs, photos and uploads are stored in your browser, not on our servers. No analytics, no cookies, no tracking.',
+    body: 'Your designs, photos and uploads are stored in your browser, not on our servers. No analytics, no cookies, no tracking.',
   },
 ]
-
-/** The serif accent word, with a highlighter stroke behind it. */
-function Mark({ children }: { children: React.ReactNode }) {
-  return (
-    <span className="relative isolate inline-block font-display font-normal tracking-[-0.02em] italic">
-      {children}
-      <span aria-hidden className="absolute inset-x-[-0.06em] bottom-[0.1em] -z-10 h-[0.34em] -rotate-1 rounded-[0.08em] bg-accent" />
-    </span>
-  )
-}
 
 function Setup({ note, initial, onBack }: { note: Extract<Step, { name: 'setup' }>['note']; initial: Profile; onBack: () => void }) {
   const [profile, setProfile] = useState(initial)
@@ -232,36 +208,34 @@ function Setup({ note, initial, onBack }: { note: Extract<Step, { name: 'setup' 
       </button>
       <div className="grid gap-10 lg:grid-cols-[340px_1fr]">
         <div className="animate-rise lg:sticky lg:top-8 lg:self-start">
-          <h1 className="text-3xl leading-tight font-semibold tracking-tight">
-            First, <span className="text-[1.15em]"><Mark>you.</Mark></span>
-          </h1>
+          <h1 className="text-3xl leading-tight font-extrabold tracking-[-0.03em]">First, a bit about you</h1>
           <p className="mt-2 text-sm leading-relaxed text-muted">This fills in the profile preview and personalises every template. It is saved in your browser only.</p>
           {note && (
-            <p className={`mt-5 flex gap-2.5 rounded-xl border px-3.5 py-3 text-sm leading-relaxed ${note.tone === 'ok' ? 'border-accent-strong/25 bg-accent/25' : 'border-[#e0a800]/40 bg-[#fff6d6]'}`}>
-              {note.tone === 'ok' ? <Check className="mt-0.5 size-4 shrink-0 text-accent-strong" /> : <TriangleAlert className="mt-0.5 size-4 shrink-0 text-[#a77b00]" />}
+            <p className={`mt-5 flex gap-2.5 rounded-xl border px-3.5 py-3 text-sm leading-relaxed ${note.tone === 'ok' ? 'border-accent/25 bg-accent/5' : 'border-[#e0a800]/40 bg-[#fff8e1]'}`}>
+              {note.tone === 'ok' ? <Check className="mt-0.5 size-4 shrink-0 text-accent" /> : <TriangleAlert className="mt-0.5 size-4 shrink-0 text-[#a77b00]" />}
               {note.text}
             </p>
           )}
-          <div ref={nameRef} className="mt-5 rounded-2xl border border-line bg-panel p-4">
+          <div ref={nameRef} className="mt-6">
             <ProfileFields profile={profile} onChange={setProfile} />
           </div>
           <p className="mt-3 text-xs text-subtle">Click the photo to change it. The templates update as you type.</p>
         </div>
 
         <div className="animate-rise [animation-delay:80ms]">
-          <h2 className="text-sm font-medium text-muted">Pick a starting point</h2>
-          <div className="mt-4 grid gap-4 sm:grid-cols-2">
+          <h2 className="text-sm font-semibold">Pick a starting point</h2>
+          <div className="mt-4 grid gap-x-6 gap-y-7 sm:grid-cols-2">
             {templates.map(({ template, doc }) => (
               <button
                 key={template.id}
                 type="button"
                 onClick={() => start(instantiate(template, profile))}
-                className="group rounded-2xl border border-line bg-panel p-2.5 text-left transition-[transform,border-color,background-color] duration-200 hover:-translate-y-1 hover:border-line-strong hover:bg-raised"
+                className="group text-left"
               >
                 <TemplateCard doc={doc} profile={profile} />
-                <div className="flex items-center justify-between px-1.5 pt-2.5 pb-0.5">
+                <div className="flex items-center justify-between pt-2">
                   <span className="text-sm font-medium">{template.name}</span>
-                  <span className="flex items-center gap-1 text-xs text-subtle opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100">
+                  <span className="flex items-center gap-1 text-xs font-medium text-accent opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100">
                     Use this <ArrowRight className="size-3.5" />
                   </span>
                 </div>
@@ -270,7 +244,7 @@ function Setup({ note, initial, onBack }: { note: Extract<Step, { name: 'setup' 
             <button
               type="button"
               onClick={() => start(blankDoc())}
-              className="flex min-h-40 flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-line-strong text-muted transition-colors hover:bg-raised hover:text-fg"
+              className="flex min-h-36 flex-col items-center justify-center gap-2 self-start rounded-xl border border-dashed border-line-strong text-muted transition-colors hover:border-accent hover:text-accent"
             >
               <Plus className="size-5" />
               <span className="text-sm font-medium">Blank canvas</span>
@@ -294,7 +268,7 @@ function TemplateCard({ doc, profile }: { doc: BannerDoc; profile: Profile }) {
   }, [])
   return (
     <div ref={ref} className="min-h-24">
-      {width > 0 && <ProfileCard quiet doc={doc} profile={profile} width={width} />}
+      {width > 0 && <ProfileCard quiet doc={doc} profile={profile} width={width} className="transition-shadow group-hover:ring-2 group-hover:ring-accent" />}
     </div>
   )
 }
@@ -306,10 +280,8 @@ export function Welcome() {
 
   return (
     <div className="relative min-h-full overflow-x-hidden">
-      {/* Soft glow behind the hero. */}
-      <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-[640px] bg-[radial-gradient(ellipse_60%_55%_at_50%_-10%,rgb(200_242_75/0.5),transparent)]" />
       <header className="relative flex h-16 items-center justify-between px-6">
-        <Logo className="text-[15px]" />
+        <Logo className="text-base" />
         {hasDesign && (
           <Button variant="ghost" onClick={() => useEditor.getState().setScreen('editor')}>
             Back to my design <ArrowRight className="size-3.5" />
@@ -324,7 +296,7 @@ export function Welcome() {
         )}
       </main>
       <footer className="relative px-6 py-8 text-center text-xs text-subtle">
-        Free and open. Not affiliated with LinkedIn.
+        Openbanner is free and open. Not affiliated with LinkedIn.
       </footer>
     </div>
   )

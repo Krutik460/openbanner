@@ -14,7 +14,7 @@ export function Avatar({ profile, size }: { profile: Pick<Profile, 'name' | 'ava
   )
 }
 
-const field = 'w-full rounded-lg border border-line bg-app px-3 py-2 text-[13px] placeholder:text-subtle transition-colors focus:border-line-strong'
+const field = 'w-full rounded-lg border border-line-strong bg-panel px-3 py-2 text-sm placeholder:text-subtle transition-[border-color,box-shadow] focus:border-accent focus:shadow-[0_0_0_3px_rgb(15_111_236/0.15)]'
 
 /** Name, headline and photo: what the profile preview and the templates are built from. */
 export function ProfileFields({ profile, onChange }: { profile: Profile; onChange: (profile: Profile) => void }) {
@@ -38,11 +38,11 @@ export function ProfileFields({ profile, onChange }: { profile: Profile; onChang
       </button>
       <div className="min-w-0 flex-1 space-y-2">
         <label className="block">
-          <span className="mb-1 block text-xs text-muted">Name</span>
+          <span className="mb-1 block text-xs font-medium">Name</span>
           <input className={field} placeholder="Your name" value={profile.name} onChange={(e) => onChange({ ...profile, name: e.target.value })} autoComplete="name" />
         </label>
         <label className="block">
-          <span className="mb-1 block text-xs text-muted">Headline</span>
+          <span className="mb-1 block text-xs font-medium">Headline</span>
           <textarea
             className={`${field} resize-none`}
             rows={2}

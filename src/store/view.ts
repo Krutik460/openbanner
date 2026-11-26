@@ -14,9 +14,11 @@ interface ViewState {
   height: number
   /** Height of the profile card preview in banner pixels (0 until measured). */
   cardHeight: number
+  /** On-screen box around the current selection (handles included), or null while there is none or it is moving. */
+  frame: { x: number; y: number; width: number; height: number } | null
   /** False once the person pans or zooms, so resizing stops re-fitting. */
   fitted: boolean
-  set: (view: Partial<Pick<ViewState, 'x' | 'y' | 'scale' | 'width' | 'height' | 'cardHeight' | 'fitted'>>) => void
+  set: (view: Partial<Pick<ViewState, 'x' | 'y' | 'scale' | 'width' | 'height' | 'cardHeight' | 'frame' | 'fitted'>>) => void
   /** Zoom keeping the given screen point (default: viewport centre) stationary. */
   zoomTo: (scale: number, anchor?: { x: number; y: number }) => void
   panBy: (dx: number, dy: number) => void
@@ -29,6 +31,7 @@ export const useView = create<ViewState>((set, get) => ({
   width: 0,
   height: 0,
   cardHeight: 0,
+  frame: null,
   fitted: true,
   set: (view) => set(view),
   zoomTo: (target, anchor) => {

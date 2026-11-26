@@ -30,8 +30,8 @@ export function Hint() {
 
   if (done || !hasElements) return null
   return (
-    <p className="pointer-events-none absolute top-3 left-1/2 z-10 flex h-10 -translate-x-1/2 animate-pop items-center gap-2 rounded-xl bg-panel/95 px-3.5 text-xs whitespace-nowrap text-muted shadow-pop backdrop-blur-md">
-      <MousePointer2 className="size-3.5 text-accent-strong" />
+    <p className="pointer-events-none absolute top-4 left-1/2 z-10 flex h-9 -translate-x-1/2 animate-pop items-center gap-2 rounded-full bg-fg px-4 text-xs whitespace-nowrap text-white shadow-pop">
+      <MousePointer2 className="size-3.5" />
       Click anything on the banner to edit it. Click text twice to retype it.
     </p>
   )

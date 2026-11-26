@@ -46,18 +46,18 @@ function ShapePreview({ preset }: { preset: ShapePreset }) {
     traceShape(ctx as unknown as Context, preset.shape, w, h, (preset.radius ?? 0) * scale)
     ctx.closePath()
     if (preset.fill === null) {
-      ctx.strokeStyle = '#3F3F46'
+      ctx.strokeStyle = '#111111'
       ctx.lineWidth = 2
       ctx.stroke()
     } else {
-      ctx.fillStyle = '#3F3F46'
+      ctx.fillStyle = '#111111'
       ctx.fill()
     }
   }, [preset])
   return <canvas ref={ref} className="size-11" />
 }
 
-export function ElementsPanel() {
+export function ElementsPanel({ onAdd }: { onAdd: () => void }) {
   const [query, setQuery] = useState('')
   const icons = useMemo(() => {
     const q = query.trim().toLowerCase()
@@ -75,8 +75,8 @@ export function ElementsPanel() {
               type="button"
               aria-label={label}
               title={label}
-              onClick={() => addShape(preset)}
-              className="flex aspect-square items-center justify-center rounded-lg bg-raised transition-colors hover:bg-active"
+              onClick={() => (addShape(preset), onAdd())}
+              className="flex aspect-square items-center justify-center rounded-lg transition-colors hover:bg-hover"
             >
               <ShapePreview preset={{ label, ...preset }} />
             </button>
@@ -102,8 +102,8 @@ export function ElementsPanel() {
                   type="button"
                   aria-label={name}
                   title={name}
-                  onClick={() => addIcon(name)}
-                  className="flex aspect-square items-center justify-center rounded-lg text-muted transition-colors hover:bg-active hover:text-fg"
+                  onClick={() => (addIcon(name), onAdd())}
+                  className="flex aspect-square items-center justify-center rounded-lg text-fg transition-colors hover:bg-hover"
                 >
                   <Icon className="size-5" strokeWidth={1.75} />
                 </button>

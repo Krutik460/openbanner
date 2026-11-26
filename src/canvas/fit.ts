@@ -21,7 +21,8 @@ export function fitView(): void {
   const { width, height, cardHeight } = useView.getState()
   if (!width || !height) return
   const { device, showProfile } = useEditor.getState()
-  const pad = { x: width < 700 ? 16 : 44, top: 92, bottom: 84 }
+  // Top leaves room for the floating selection bar, bottom for the toolbar.
+  const pad = { x: width < 700 ? 16 : 48, top: 72, bottom: 104 }
   const contentH = showProfile ? previewHeight(device, cardHeight) : BANNER.height
   const scale = clamp(
     Math.min((width - pad.x * 2) / BANNER.width, (height - pad.top - pad.bottom) / contentH),

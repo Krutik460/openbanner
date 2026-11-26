@@ -41,11 +41,6 @@ export async function saveDesign(doc: BannerDoc): Promise<void> {
   await set(KEY.designs, [meta, ...designs])
 }
 
-export async function deleteDesign(id: string): Promise<void> {
-  await del(KEY.design(id))
-  await set(KEY.designs, (await listDesigns()).filter((d) => d.id !== id))
-}
-
 export function getCurrentDesignId(): string | null {
   try {
     return localStorage.getItem(KEY.current)

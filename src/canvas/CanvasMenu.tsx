@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 import { ContextMenu } from 'radix-ui'
-import { selectedElements, useEditor } from '@/store/editor'
+import { useEditor } from '@/store/editor'
 
 const MOD = navigator.platform.includes('Mac') ? '⌘' : 'Ctrl+'
 
@@ -23,7 +23,6 @@ const Separator = () => <ContextMenu.Separator className="my-1.5 h-px bg-line" /
 export function CanvasMenu() {
   const selection = useEditor((s) => s.selection.length)
   const hasClipboard = useEditor((s) => s.clipboard.length > 0)
-  const allLocked = useEditor((s) => selectedElements(s).every((el) => el.locked))
   const none = selection === 0
   return (
     <ContextMenu.Portal>
@@ -37,7 +36,6 @@ export function CanvasMenu() {
         <Item disabled={none} onSelect={() => useEditor.getState().reorder('front')}>Bring to front</Item>
         <Item disabled={none} onSelect={() => useEditor.getState().reorder('back')}>Send to back</Item>
         <Separator />
-        <Item disabled={none} onSelect={() => useEditor.getState().patchElements(useEditor.getState().selection, { locked: !allLocked })}>{allLocked && !none ? 'Unlock' : 'Lock'}</Item>
         <Item shortcut={`${MOD}A`} onSelect={() => useEditor.getState().select(useEditor.getState().doc.elements.filter((el) => !el.locked && !el.hidden).map((el) => el.id))}>Select all</Item>
         <Separator />
         <Item shortcut="Del" danger disabled={none} onSelect={() => useEditor.getState().removeSelected()}>Delete</Item>

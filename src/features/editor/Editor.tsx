@@ -1,121 +1,18 @@
 import { useEffect, useState } from 'react'
-import clsx from 'clsx'
-import { FolderOpen, ImageUp, Keyboard, Layers, LayoutTemplate, PaintBucket, Shapes, Type, X } from 'lucide-react'
 import { EditorStage } from '@/canvas/EditorStage'
 import { fitView } from '@/canvas/fit'
-import { IconButton, Popover } from '@/components/ui'
-import { useEditor, type PanelId } from '@/store/editor'
+import { Toaster } from '@/components/Toaster'
+import { useEditor } from '@/store/editor'
+import { toast } from '@/store/toasts'
 import { useView } from '@/store/view'
 import { addImageFiles } from './actions'
-import { Toaster } from '@/components/Toaster'
-import { toast } from '@/store/toasts'
 import { ContextBar } from './ContextBar'
 import { CoverageWarning } from './CoverageWarning'
 import { Hint } from './Hint'
-import { BackgroundPanel } from './panels/BackgroundPanel'
-import { DesignsPanel } from './panels/DesignsPanel'
-import { ElementsPanel } from './panels/ElementsPanel'
-import { LayersPanel } from './panels/LayersPanel'
-import { TemplatesPanel } from './panels/TemplatesPanel'
-import { TextPanel } from './panels/TextPanel'
-import { UploadsPanel } from './panels/UploadsPanel'
 import { ProfileMock } from './ProfileMock'
+import { Toolbar } from './Toolbar'
 import { TopBar } from './TopBar'
-import { ViewBar } from './ViewBar'
-
-const PANELS: { id: PanelId; label: string; icon: typeof Type; view: () => React.JSX.Element }[] = [
-  { id: 'templates', label: 'Templates', icon: LayoutTemplate, view: TemplatesPanel },
-  { id: 'background', label: 'Background', icon: PaintBucket, view: BackgroundPanel },
-  { id: 'text', label: 'Text', icon: Type, view: TextPanel },
-  { id: 'elements', label: 'Elements', icon: Shapes, view: ElementsPanel },
-  { id: 'uploads', label: 'Uploads', icon: ImageUp, view: UploadsPanel },
-  { id: 'layers', label: 'Layers', icon: Layers, view: LayersPanel },
-  { id: 'designs', label: 'Designs', icon: FolderOpen, view: DesignsPanel },
-]
-
-const isMac = navigator.platform.includes('Mac')
-const MOD = isMac ? '⌘' : 'Ctrl'
-const SHORTCUTS: [string, string][] = [
-  ['Edit text', 'Click selected text'],
-  ['Undo / redo', `${MOD} Z / ${MOD} ⇧ Z`],
-  ['Duplicate', `${MOD} D`],
-  ['Copy / paste', `${MOD} C / ${MOD} V`],
-  ['Select all', `${MOD} A`],
-  ['Delete', 'Del'],
-  ['Nudge (×10 with ⇧)', 'Arrow keys'],
-  ['Forward / backward', '] / ['],
-  ['Add to selection', '⇧ click'],
-  ['Snap off while dragging', 'Alt'],
-  ['Zoom', `${MOD} scroll`],
-  ['Pan', 'Space + drag'],
-  ['Fit to screen', '1'],
-]
-
-function Rail() {
-  const panel = useEditor((s) => s.panel)
-  const setPanel = useEditor((s) => s.setPanel)
-  return (
-    <nav aria-label="Tools" className="flex w-[72px] shrink-0 flex-col items-center gap-1 border-r border-line bg-panel py-2">
-      {PANELS.map(({ id, label, icon: Icon }) => (
-        <button
-          key={id}
-          type="button"
-          aria-pressed={panel === id}
-          onClick={() => setPanel(panel === id ? null : id)}
-          className={clsx(
-            'flex h-[54px] w-[62px] flex-col items-center justify-center gap-1 rounded-lg text-[10.5px] font-medium transition-colors',
-            panel === id ? 'bg-active text-fg' : 'text-muted hover:bg-hover hover:text-fg',
-            id === 'designs' && 'mt-auto',
-          )}
-        >
-          <Icon className="size-[18px]" strokeWidth={1.75} />
-          {label}
-        </button>
-      ))}
-      <Popover
-        side="right"
-        align="end"
-        className="w-72"
-        trigger={
-          <IconButton label="Keyboard shortcuts" tooltipSide="right" className="mt-1">
-            <Keyboard />
-          </IconButton>
-        }
-      >
-        <h2 className="mb-2 px-1 text-sm font-semibold">Shortcuts</h2>
-        <dl className="space-y-0.5">
-          {SHORTCUTS.map(([action, keys]) => (
-            <div key={action} className="flex items-center justify-between rounded-md px-1 py-1 text-xs">
-              <dt className="text-muted">{action}</dt>
-              <dd className="font-mono text-[11px] text-fg">{keys}</dd>
-            </div>
-          ))}
-        </dl>
-      </Popover>
-    </nav>
-  )
-}
-
-function SidePanel() {
-  const panel = useEditor((s) => s.panel)
-  const setPanel = useEditor((s) => s.setPanel)
-  const active = PANELS.find((p) => p.id === panel)
-  if (!active) return null
-  const View = active.view
-  return (
-    <aside aria-label={active.label} className="flex w-[312px] shrink-0 flex-col border-r border-line bg-panel max-md:absolute max-md:inset-y-0 max-md:left-[72px] max-md:z-20 max-md:w-[min(312px,calc(100vw-72px))] max-md:shadow-pop">
-      <div className="flex h-12 shrink-0 items-center justify-between pr-2 pl-4">
-        <h2 className="text-sm font-semibold">{active.label}</h2>
-        <IconButton label="Close panel" onClick={() => setPanel(null)}>
-          <X />
-        </IconButton>
-      </div>
-      <div key={active.id} className="min-h-0 flex-1 overflow-y-auto px-4 pb-6">
-        <View />
-      </div>
-    </aside>
-  )
-}
+import { ViewControls } from './ViewControls'
 
 function useShortcuts() {
   useEffect(() => {
@@ -157,7 +54,7 @@ function useShortcuts() {
       if (move[key] && editor.selection.length) return done(), editor.nudge(...move[key])
     }
 
-    // Paste: an image from the clipboard becomes an upload; otherwise paste copied elements.
+    // Paste: an image from the clipboard is added to the banner; otherwise paste copied elements.
     const onPaste = (e: ClipboardEvent) => {
       const target = e.target as HTMLElement
       if (target.isContentEditable || /^(INPUT|TEXTAREA)$/.test(target.tagName)) return
@@ -179,46 +76,40 @@ function useShortcuts() {
   }, [])
 }
 
+/** The editor: a header, the banner on its profile preview, and one toolbar. */
 export function Editor() {
   useShortcuts()
-  // On small screens the side panel would cover the canvas, so start with it closed.
-  useEffect(() => {
-    if (window.innerWidth < 768) useEditor.getState().setPanel(null)
-  }, [])
   const [dropping, setDropping] = useState(false)
   const hasFiles = (e: React.DragEvent) => e.dataTransfer.types.includes('Files')
 
   return (
     <div className="flex h-full flex-col">
       <TopBar />
-      <div className="relative flex min-h-0 flex-1">
-        <Rail />
-        <SidePanel />
-        <main
-          className="workspace relative min-w-0 flex-1 overflow-hidden"
-          onDragOver={(e) => hasFiles(e) && (e.preventDefault(), setDropping(true))}
-          onDragLeave={(e) => e.currentTarget === e.target && setDropping(false)}
-          onDrop={(e) => {
-            if (!hasFiles(e)) return
-            e.preventDefault()
-            setDropping(false)
-            void addImageFiles(e.dataTransfer.files).then((count) => count === 0 && toast('Only image files can be added', { tone: 'error' }))
-          }}
-        >
-          <ProfileMock />
-          <EditorStage />
-          <ContextBar />
-          <Hint />
-          <CoverageWarning />
-          <ViewBar />
-          <Toaster />
-          {dropping && (
-            <div className="pointer-events-none absolute inset-3 z-30 flex items-center justify-center rounded-2xl border-2 border-dashed border-accent-strong bg-accent/25 text-base font-medium backdrop-blur-sm">
-              Drop to add to your banner
-            </div>
-          )}
-        </main>
-      </div>
+      <main
+        className="workspace relative min-h-0 flex-1 overflow-hidden"
+        onDragOver={(e) => hasFiles(e) && (e.preventDefault(), setDropping(true))}
+        onDragLeave={(e) => e.currentTarget === e.target && setDropping(false)}
+        onDrop={(e) => {
+          if (!hasFiles(e)) return
+          e.preventDefault()
+          setDropping(false)
+          void addImageFiles(e.dataTransfer.files).then((count) => count === 0 && toast('Only image files can be added', { tone: 'error' }))
+        }}
+      >
+        <ProfileMock />
+        <EditorStage />
+        <ContextBar />
+        <Hint />
+        <CoverageWarning />
+        <ViewControls />
+        <Toolbar />
+        <Toaster />
+        {dropping && (
+          <div className="pointer-events-none absolute inset-3 z-30 flex items-center justify-center rounded-2xl border-2 border-dashed border-accent bg-accent/10 text-base font-medium">
+            Drop to add to your banner
+          </div>
+        )}
+      </main>
     </div>
   )
 }

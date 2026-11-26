@@ -8,7 +8,6 @@ const HISTORY_LIMIT = 100
 /** Edits sharing a key within this window (a slider drag, typing) undo as one step. */
 const COALESCE_MS = 800
 
-export type PanelId = 'templates' | 'background' | 'text' | 'elements' | 'uploads' | 'layers' | 'designs'
 export type SaveState = 'saved' | 'saving' | 'error'
 
 interface EditorState {
@@ -20,7 +19,6 @@ interface EditorState {
   selection: string[]
   editingId: string | null
   clipboard: BannerElement[]
-  panel: PanelId | null
   device: Device
   showProfile: boolean
   showSafeZones: boolean
@@ -40,7 +38,6 @@ interface EditorState {
   copy: () => void
   paste: () => void
   reorder: (to: 'front' | 'back' | 'forward' | 'backward') => void
-  moveLayer: (id: string, toIndex: number) => void
   nudge: (dx: number, dy: number) => void
   rename: (name: string) => void
   undo: () => void
@@ -48,7 +45,6 @@ interface EditorState {
   select: (ids: string[]) => void
   toggleSelect: (id: string) => void
   setEditing: (id: string | null) => void
-  setPanel: (panel: PanelId | null) => void
   setView: (view: Partial<Pick<EditorState, 'device' | 'showProfile' | 'showSafeZones'>>) => void
   setSaveState: (state: SaveState) => void
 }
@@ -67,7 +63,6 @@ export const useEditor = create<EditorState>((set, get) => ({
   selection: [],
   editingId: null,
   clipboard: [],
-  panel: 'templates',
   device: 'desktop',
   showProfile: true,
   showSafeZones: false,
@@ -168,16 +163,6 @@ export const useEditor = create<EditorState>((set, get) => ({
     })
   },
 
-  moveLayer: (id, toIndex) =>
-    get().mutate((doc) => {
-      const from = doc.elements.findIndex((el) => el.id === id)
-      if (from === -1 || from === toIndex) return doc
-      const els = [...doc.elements]
-      const [moved] = els.splice(from, 1)
-      els.splice(toIndex, 0, moved)
-      return { ...doc, elements: els }
-    }),
-
   nudge: (dx, dy) => {
     const { selection, doc } = get()
     const movable = doc.elements.filter((el) => selection.includes(el.id) && !el.locked).map((el) => el.id)
@@ -222,7 +207,6 @@ export const useEditor = create<EditorState>((set, get) => ({
     set({ selection: selection.includes(id) ? selection.filter((s) => s !== id) : [...selection, id], editingId: null })
   },
   setEditing: (id) => set({ editingId: id, selection: id ? [id] : get().selection }),
-  setPanel: (panel) => set({ panel }),
   setView: (view) => set(view),
   setSaveState: (saveState) => set({ saveState }),
 }))
