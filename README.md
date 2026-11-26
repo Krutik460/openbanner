@@ -9,7 +9,7 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/Krutik460/linkedin-banner-creator/actions/workflows/deploy.yml"><img src="https://github.com/Krutik460/linkedin-banner-creator/actions/workflows/deploy.yml/badge.svg" alt="CI status" /></a>
+  <a href="https://github.com/Krutik460/openbanner/actions/workflows/deploy.yml"><img src="https://github.com/Krutik460/openbanner/actions/workflows/deploy.yml/badge.svg" alt="CI status" /></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="MIT license" /></a>
   <a href="CONTRIBUTING.md"><img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" alt="PRs welcome" /></a>
 </p>
@@ -55,8 +55,8 @@ Most banner tools give you a blank 1584×396 rectangle. Openbanner puts that rec
 ### Run locally
 
 ```bash
-git clone https://github.com/Krutik460/linkedin-banner-creator.git
-cd linkedin-banner-creator
+git clone https://github.com/Krutik460/openbanner.git
+cd openbanner
 npm install
 npm run dev
 ```
@@ -153,7 +153,7 @@ The profile photo positions in [`src/lib/constants.ts`](src/lib/constants.ts) ar
 
 Contributions are welcome, whether that is a bug report, a new template, a fix to the photo positions or a new feature. Please read [CONTRIBUTING.md](CONTRIBUTING.md) before opening a pull request.
 
-Found a bug or have an idea? [Open an issue](https://github.com/Krutik460/linkedin-banner-creator/issues).
+Found a bug or have an idea? [Open an issue](https://github.com/Krutik460/openbanner/issues).
 
 ## License
 

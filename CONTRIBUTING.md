@@ -4,7 +4,7 @@ Thanks for taking the time to contribute. This guide covers how to report issues
 
 ## Reporting bugs and requesting features
 
-Search [existing issues](https://github.com/Krutik460/linkedin-banner-creator/issues) first. If nothing matches, open a new one with:
+Search [existing issues](https://github.com/Krutik460/openbanner/issues) first. If nothing matches, open a new one with:
 
 - What you did, what you expected, and what happened instead
 - Your browser and operating system
@@ -17,8 +17,8 @@ Please do not include anyone's LinkedIn profile details in an issue unless they 
 You need Node.js 22 or newer.
 
 ```bash
-git clone https://github.com/<your-username>/linkedin-banner-creator.git
-cd linkedin-banner-creator
+git clone https://github.com/<your-username>/openbanner.git
+cd openbanner
 npm install
 npm run dev
 ```
