@@ -9,6 +9,7 @@ import { addImageFiles } from './actions'
 import { ContextBar } from './ContextBar'
 import { CoverageWarning } from './CoverageWarning'
 import { Hint } from './Hint'
+import { ProfileDetails } from './ProfileDetails'
 import { ProfileMock } from './ProfileMock'
 import { Toolbar } from './Toolbar'
 import { TopBar } from './TopBar'
@@ -97,7 +98,9 @@ export function Editor() {
         }}
       >
         <ProfileMock />
-        <EditorStage />
+        <EditorStage>
+          <ProfileDetails />
+        </EditorStage>
         <ContextBar />
         <Hint />
         <CoverageWarning />

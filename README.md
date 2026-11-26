@@ -20,14 +20,13 @@ Most banner tools give you a blank 1584×396 rectangle. Openbanner puts that rec
 
 - **Free.** No paid plan, no watermark, no export limit.
 - **No account.** Nothing to sign up for.
-- **Private by design.** Designs, uploads and profile details stay in your browser (IndexedDB). No analytics, no cookies, no third-party requests. Fonts are bundled, not loaded from a CDN.
+- **Private by design.** Designs, uploads and profile details stay in your browser (IndexedDB). There is no server code, no analytics, no cookies and no third-party requests. Fonts are bundled, not loaded from a CDN.
 
 ## Table of contents
 
 - [Features](#features)
 - [Getting started](#getting-started)
 - [Keyboard shortcuts](#keyboard-shortcuts)
-- [How the profile lookup works](#how-the-profile-lookup-works)
 - [Deployment](#deployment)
 - [Project structure](#project-structure)
 - [Tech stack](#tech-stack)
@@ -36,9 +35,10 @@ Most banner tools give you a blank 1584×396 rectangle. Openbanner puts that rec
 
 ## Features
 
-- **Start from your profile.** Paste a LinkedIn profile link and the app tries to read your name, headline and photo. If LinkedIn refuses, a ten-second form takes over. You can also skip this step entirely.
+- **Start in one click.** Preview the templates on a placeholder profile, pick one and start editing. Add your name, headline and photo whenever you like, right on the preview.
 - **Design in context.** The banner sits on a mock profile card with desktop and mobile photo positions, and the editor warns you when text or an icon is hidden behind the photo.
-- **Templates.** 12 starting points, filled in with your name and headline.
+- **Your profile, in place.** Type your name, headline and location straight into the preview, add a photo, and try LinkedIn's #OpenToWork frame. None of it is part of the exported image.
+- **Templates.** 24 starting points with placeholder text that is easy to replace.
 - **One toolbar.** Templates, Text, Shapes and icons, Image, Background. Select anything on the canvas and a small bar appears above it with just the controls that element needs.
 - **Real canvas editing.** Drag, resize, rotate, snapping guides, multi-select, right-click menu, undo/redo and keyboard shortcuts.
 - **Backgrounds.** Solid colors, gradients, mesh gradients and your own photos.
@@ -61,16 +61,16 @@ npm install
 npm run dev
 ```
 
-Then open the URL Vite prints (usually http://localhost:5173). The dev server also serves the `/api/profile` endpoint, so the full app works locally.
+Then open the URL Vite prints (usually http://localhost:5173).
 
 ### Scripts
 
 | Command                  | What it does                                           |
 | ------------------------ | ------------------------------------------------------ |
-| `npm run dev`            | Start the Vite dev server with the profile lookup API  |
+| `npm run dev`            | Start the Vite dev server                              |
 | `npm run build`          | Typecheck and build the production bundle into `dist/` |
 | `npm run preview`        | Serve the production build locally                     |
-| `npm run preview:worker` | Build and run the app inside a local Cloudflare Worker |
+| `npm run preview:worker` | Build and serve the app locally with Wrangler          |
 | `npm test`               | Run the test suite (Vitest)                            |
 | `npm run typecheck`      | Typecheck the project                                  |
 | `npm run deploy`         | Build and deploy to Cloudflare Workers                 |
@@ -95,23 +95,9 @@ Then open the URL Vite prints (usually http://localhost:5173). The dev server al
 
 Pasting an image from the clipboard adds it to the banner.
 
-## How the profile lookup works
-
-LinkedIn has no public API for reading a profile, so `POST /api/profile` (JSON body `{ "handle": "..." }`) is best effort. It requests the public profile page the way a link-preview service would, identifies itself honestly, and reads the name, headline and photo the page publishes about itself ([`server/linkedin.ts`](server/linkedin.ts)).
-
-LinkedIn often answers these requests with a login wall or HTTP 999, especially from cloud IP ranges. When that happens the app says so and asks for the details instead. Nothing else depends on the lookup succeeding. If you need it to be reliable, the supported route is "Sign in with LinkedIn" (OpenID Connect), which requires registering a LinkedIn app.
-
-Privacy guarantees of the endpoint:
-
-- It only contacts `www.linkedin.com/in/<handle>` and, for the photo, hosts under `licdn.com`.
-- It stores nothing and responds with `Cache-Control: no-store`.
-- The handle travels in the request body, not the URL, so it stays out of access logs.
-
-This lookup is the only time anything about a visitor reaches a server, and the landing page says so. Please keep it that way in contributions.
-
 ## Deployment
 
-Openbanner runs on [Cloudflare Workers](https://developers.cloudflare.com/workers/) with static assets ([`wrangler.jsonc`](wrangler.jsonc)). The Vite build in `dist/` is served as static files, and only `/api/*` runs code: [`worker/index.ts`](worker/index.ts) passes the profile lookup to the same handler the dev server uses. Request logging is turned off.
+Openbanner runs on [Cloudflare Workers](https://developers.cloudflare.com/workers/) with static assets ([`wrangler.jsonc`](wrangler.jsonc)). The Vite build in `dist/` is served as static files and no server code runs at all, so nothing about a visitor ever reaches a server. Request logging is turned off.
 
 ### Deploy your own
 
@@ -128,12 +114,10 @@ To deploy by hand instead, log in with `npx wrangler login` and run `npm run dep
 ## Project structure
 
 ```
-worker/         Cloudflare Worker entry point for the profile lookup
-server/         Profile lookup logic and its tests (shared by the dev server and the Worker)
 src/lib/        Document types, templates, fonts, storage, export
 src/store/      Editor state (zustand), viewport, autosave
 src/canvas/     Konva rendering, the interactive stage, snapping, export render
-src/features/   Welcome flow and editor UI
+src/features/   Landing page and editor UI
 ```
 
 The profile photo positions in [`src/lib/constants.ts`](src/lib/constants.ts) are measured approximations of LinkedIn's current layouts. LinkedIn does not publish them, so corrections are welcome.

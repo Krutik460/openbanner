@@ -1,26 +1,42 @@
+import { navigate, routeOf } from '@/lib/route'
 import * as storage from '@/lib/storage'
 import type { BannerDoc, Profile } from '@/lib/types'
 import { debounce } from '@/lib/util'
 import { useEditor } from './editor'
 
-/** Loads what this browser remembers and decides where the person lands. */
+/**
+ * Loads what this browser remembers and decides where the person lands.
+ * Someone with a saved design opening the site goes straight back to it;
+ * /templates always shows the templates page.
+ */
 export async function restore(): Promise<void> {
   const editor = useEditor.getState()
+  const route = routeOf()
+  let doc: BannerDoc | undefined
   try {
     const [profile, designs] = await Promise.all([storage.loadProfile(), storage.listDesigns()])
     if (profile) editor.setProfile(profile)
     const wanted = storage.getCurrentDesignId()
     const id = designs.find((d) => d.id === wanted)?.id ?? designs[0]?.id
-    const doc = id ? await storage.loadDesign(id) : undefined
-    if (doc) {
-      editor.openDoc(doc)
-      editor.setScreen('editor')
-      return
-    }
+    doc = id ? await storage.loadDesign(id) : undefined
   } catch {
     // Storage unavailable (private mode, blocked): the app still works, it just will not remember.
   }
-  editor.setScreen('welcome')
+  if (doc) editor.openDoc(doc)
+  if (doc && route !== 'templates') {
+    navigate('editor', { replace: true })
+    editor.setScreen('editor')
+  } else {
+    if (route === 'editor') navigate('home', { replace: true })
+    editor.setScreen('welcome')
+  }
+}
+
+/** Keeps the screen in step with the address bar when the visitor uses Back and Forward. */
+export function followHistory(): () => void {
+  const onPop = () => useEditor.getState().setScreen(routeOf() === 'editor' ? 'editor' : 'welcome')
+  window.addEventListener('popstate', onPop)
+  return () => window.removeEventListener('popstate', onPop)
 }
 
 const persist = debounce((doc: BannerDoc) => {
@@ -54,5 +70,18 @@ export function rememberProfile(profile: Profile): void {
 export function openInEditor(doc: BannerDoc): void {
   const editor = useEditor.getState()
   editor.openDoc(doc)
+  navigate('editor')
   editor.setScreen('editor')
+}
+
+/** Leaves the editor for the landing page. The design stays loaded and saved. */
+export function goHome(): void {
+  navigate('home')
+  useEditor.getState().setScreen('welcome')
+}
+
+/** Back to the design that is already loaded. */
+export function resumeEditing(): void {
+  navigate('editor')
+  useEditor.getState().setScreen('editor')
 }

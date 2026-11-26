@@ -18,13 +18,18 @@ import '@fontsource-variable/playfair-display/wght.css'
 import '@fontsource-variable/playfair-display/wght-italic.css'
 import '@fontsource-variable/fraunces/wght.css'
 import '@fontsource-variable/fraunces/wght-italic.css'
+import '@fontsource-variable/cormorant-garamond/wght.css'
+import '@fontsource-variable/cormorant-garamond/wght-italic.css'
 import '@fontsource-variable/jetbrains-mono/wght.css'
 import '@fontsource-variable/caveat/wght.css'
+import '@fontsource/ms-madi/400.css'
 import '@fontsource/instrument-serif/400.css'
 import '@fontsource/instrument-serif/400-italic.css'
 import '@fontsource/dm-serif-display/400.css'
 import '@fontsource/dm-serif-display/400-italic.css'
 import '@fontsource/bebas-neue/400.css'
+// Only for the #OpenToWork and #Hiring photo frames, which LinkedIn sets in a humanist sans.
+import '@fontsource-variable/source-sans-3/wght.css'
 
 export interface FontDef {
   label: string
@@ -54,8 +59,10 @@ export const FONTS: FontDef[] = [
   { label: 'Playfair Display', family: 'Playfair Display Variable', weights: range(400, 900), group: 'Serif' },
   { label: 'Fraunces', family: 'Fraunces Variable', weights: range(300, 900), group: 'Serif' },
   { label: 'DM Serif Display', family: 'DM Serif Display', weights: [400], group: 'Serif' },
+  { label: 'Cormorant Garamond', family: 'Cormorant Garamond Variable', weights: range(300, 700), group: 'Serif' },
   { label: 'JetBrains Mono', family: 'JetBrains Mono Variable', weights: range(300, 800), group: 'Mono & hand' },
   { label: 'Caveat', family: 'Caveat Variable', weights: range(400, 700), group: 'Mono & hand' },
+  { label: 'Ms Madi', family: 'Ms Madi', weights: [400], group: 'Mono & hand' },
 ]
 
 export const FONT_BY_FAMILY = new Map(FONTS.map((font) => [font.family, font]))

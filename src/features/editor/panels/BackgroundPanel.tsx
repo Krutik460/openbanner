@@ -34,13 +34,13 @@ function GradientEditor({ gradient }: { gradient: LinearGradient }) {
   const update = (next: LinearGradient) => setBackground({ fill: next }, 'bg-gradient')
   return (
     <div className="space-y-3 rounded-lg border border-line bg-raised p-3">
-      <div className="flex items-center gap-2">
+      <div className="flex flex-wrap items-center gap-2">
         {gradient.stops.map((stop, i) => (
           <Popover
             key={i}
             align="start"
             trigger={
-              <button type="button" aria-label={`Gradient colour ${i + 1}`} className="size-7 rounded-full ring-1 ring-black/15 transition-transform hover:scale-110" style={{ background: stop.color }} />
+              <button type="button" aria-label={`Gradient colour ${i + 1}`} className="size-7 shrink-0 rounded-full ring-1 ring-black/15 transition-transform hover:scale-110" style={{ background: stop.color }} />
             }
           >
             <ColorPanel
@@ -49,7 +49,7 @@ function GradientEditor({ gradient }: { gradient: LinearGradient }) {
             />
           </Popover>
         ))}
-        <div className="ml-1 h-7 flex-1 rounded-full ring-1 ring-black/10" style={{ background: fillToCss({ ...gradient, angle: 90 }) }} />
+        <div className="ml-1 h-7 min-w-16 flex-1 rounded-full ring-1 ring-black/10" style={{ background: fillToCss({ ...gradient, angle: 90 }) }} />
       </div>
       <SliderRow label="Angle" value={gradient.angle} min={0} max={360} step={5} format={(v) => `${v}°`} onChange={(angle) => update({ ...gradient, angle })} />
     </div>
@@ -122,7 +122,7 @@ export function BackgroundPanel() {
 
       <section>
         <SectionTitle>Texture</SectionTitle>
-        <div className="grid grid-cols-5 gap-1 rounded-lg bg-raised p-0.5">
+        <div className="grid grid-cols-6 gap-1 rounded-lg bg-raised p-0.5">
           {PATTERNS.map(({ label, pattern: preset }) => {
             const active = preset ? pattern?.kind === preset.kind : !pattern
             return (

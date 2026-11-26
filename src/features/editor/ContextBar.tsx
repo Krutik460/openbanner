@@ -6,6 +6,7 @@ import {
   BringToFront, CaseUpper, Check, ChevronDown, Copy, Ellipsis, Italic, Minus, PaintBucket, Plus, SendToBack, Trash2,
 } from 'lucide-react'
 import { alignSelection, type AlignMode } from '@/canvas/align'
+import { LINE_SHAPES } from '@/canvas/shapes'
 import { BarButton, ColorButton, Divider, IconButton, Popover, SliderRow } from '@/components/ui'
 import { FONT_BY_FAMILY, FONTS, nearestWeight, WEIGHT_NAMES } from '@/lib/fonts'
 import type { BannerElement, IconElement, ImageElement, ShapeElement, TextElement } from '@/lib/types'
@@ -209,19 +210,21 @@ function ShapeControls({ el }: { el: ShapeElement }) {
   const patch = (changes: Partial<ShapeElement>, key?: string) => useEditor.getState().patchElements([el.id], changes, key && `${key}:${el.id}`)
   const colors = useDocColors()
   const fill = typeof el.fill === 'string' || el.fill === null ? el.fill : el.fill.stops[0].color
+  // Line shapes are nothing but their strokes, so they have no fill and cannot lose their colour.
+  const lines = LINE_SHAPES.has(el.shape)
   return (
     <>
-      <ColorButton label="Fill" value={fill} allowNone extra={colors} onChange={(next) => patch({ fill: next }, 'fill')} />
+      {!lines && <ColorButton label="Fill" value={fill} allowNone extra={colors} onChange={(next) => patch({ fill: next }, 'fill')} />}
       <ColorButton
-        label="Outline"
+        label={lines ? 'Lines' : 'Outline'}
         variant="stroke"
         value={el.stroke}
-        allowNone
+        allowNone={!lines}
         extra={colors}
         onChange={(stroke) => patch({ stroke, strokeWidth: stroke && !el.strokeWidth ? 3 : el.strokeWidth }, 'stroke')}
       >
         {el.stroke ? (
-          <SliderRow label="Outline width" value={el.strokeWidth} min={0.5} max={24} step={0.5} onChange={(strokeWidth) => patch({ strokeWidth }, 'sw')} />
+          <SliderRow label={lines ? 'Line width' : 'Outline width'} value={el.strokeWidth} min={0.5} max={24} step={0.5} onChange={(strokeWidth) => patch({ strokeWidth }, 'sw')} />
         ) : (
           <p className="text-xs text-subtle">Pick a colour to add an outline.</p>
         )}

@@ -8,7 +8,7 @@ import { useFontVersion } from '@/lib/fonts'
 import { useIconImage } from '@/lib/icons'
 import type { Background, BannerElement, IconElement, ImageElement, ShapeElement, TextElement } from '@/lib/types'
 import { withAlpha } from '@/lib/util'
-import { linearGradientProps, noiseTile, traceShape } from './shapes'
+import { LINE_SHAPES, linearGradientProps, noiseTile, traceShape } from './shapes'
 
 const { width: W, height: H } = BANNER
 
@@ -87,6 +87,22 @@ export const BackgroundNodes = memo(function BackgroundNodes({ background }: { b
             } else if (pattern.kind === 'grid') {
               for (let x = step; x < W; x += step) ctx.fillRect(x, 0, 1, H)
               for (let y = step; y < H; y += step) ctx.fillRect(0, y, W, 1)
+            } else if (pattern.kind === 'waves') {
+              // Bands about as thick as the gaps between them, rippling across.
+              const amplitude = step * 0.32
+              const wavelength = step * 3.2
+              ctx.strokeStyle = pattern.color
+              ctx.lineWidth = step * 0.42
+              ctx.lineCap = 'round'
+              ctx.beginPath()
+              for (let y = -step; y < H + step; y += step) {
+                for (let x = -4; x <= W + 4; x += 4) {
+                  const wy = y + Math.sin((x / wavelength) * Math.PI * 2) * amplitude
+                  if (x === -4) ctx.moveTo(x, wy)
+                  else ctx.lineTo(x, wy)
+                }
+              }
+              ctx.stroke()
             } else {
               ctx.strokeStyle = pattern.color
               ctx.lineWidth = 1
@@ -164,7 +180,7 @@ function TextNode({ el, bind, editing }: ElementProps<TextElement>) {
 
 function ShapeNode({ el, bind }: ElementProps<ShapeElement>) {
   const fillProps =
-    el.fill === null
+    el.fill === null || LINE_SHAPES.has(el.shape)
       ? { fill: undefined, fillPriority: 'color' as const }
       : typeof el.fill === 'string'
         ? { fill: el.fill, fillPriority: 'color' as const }
@@ -185,7 +201,6 @@ function ShapeNode({ el, bind }: ElementProps<ShapeElement>) {
       sceneFunc={(ctx, shape) => {
         ctx.beginPath()
         traceShape(ctx, el.shape, shape.width(), shape.height(), el.radius)
-        ctx.closePath()
         ctx.fillStrokeShape(shape)
       }}
     />

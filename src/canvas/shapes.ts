@@ -1,7 +1,13 @@
 import type { Context } from 'konva/lib/Context'
 import type { LinearGradient, ShapeKind } from '@/lib/types'
 
-/** Traces a shape's outline inside the box (0,0)-(w,h). The caller begins and fills the path. */
+/** Shapes made of open strokes: they are drawn with their outline colour only and never filled. */
+export const LINE_SHAPES: ReadonlySet<ShapeKind> = new Set(['ribbon'])
+
+/**
+ * Traces a shape inside the box (0,0)-(w,h), closing it unless it is a line
+ * shape. The caller begins the path and fills or strokes it.
+ */
 export function traceShape(ctx: Context, kind: ShapeKind, w: number, h: number, radius: number): void {
   switch (kind) {
     case 'rect': {
@@ -65,7 +71,43 @@ export function traceShape(ctx: Context, kind: ShapeKind, w: number, h: number, 
       ctx.lineTo(w, h)
       break
     }
+    case 'sparkle': {
+      // Four points joined by inward curves, pinched toward the centre.
+      const [cx, cy, k] = [w / 2, h / 2, 0.12]
+      ctx.moveTo(cx, 0)
+      ctx.quadraticCurveTo(cx + w * k, cy - h * k, w, cy)
+      ctx.quadraticCurveTo(cx + w * k, cy + h * k, cx, h)
+      ctx.quadraticCurveTo(cx - w * k, cy + h * k, 0, cy)
+      ctx.quadraticCurveTo(cx - w * k, cy - h * k, cx, 0)
+      break
+    }
+    case 'ribbon':
+      for (const line of ribbonLines(w, h)) polygon(ctx, line)
+      break
   }
+  if (!LINE_SHAPES.has(kind)) ctx.closePath()
+}
+
+/**
+ * The strands of a twisting ribbon drawn in fine lines across the box. Each
+ * strand follows the same slow wave, offset across the ribbon's width; the
+ * width swings through zero, so the strands cross where the ribbon turns over.
+ */
+export function ribbonLines(w: number, h: number, strands = 24, steps = 96): [number, number][][] {
+  const lines: [number, number][][] = []
+  for (let i = 0; i < strands; i++) {
+    const t = strands === 1 ? 0 : (i / (strands - 1)) * 2 - 1
+    const points: [number, number][] = []
+    for (let j = 0; j <= steps; j++) {
+      const u = j / steps
+      // Strands lag each other slightly, which reads as depth as the ribbon turns.
+      const centre = Math.sin(Math.PI * 2 * (u * 0.9 + 0.08 * t) + 0.6) * 0.28
+      const spread = Math.cos(Math.PI * 2 * u * 1.15 + 0.3) * 0.21
+      points.push([u * w, h * (0.5 + centre + spread * t)])
+    }
+    lines.push(points)
+  }
+  return lines
 }
 
 function polygon(ctx: Context, points: [number, number][]): void {

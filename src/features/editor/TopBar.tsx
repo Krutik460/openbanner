@@ -1,9 +1,10 @@
-import { CircleAlert, LoaderCircle, Lock, Redo2, Undo2 } from 'lucide-react'
-import { Divider, IconButton, Logo, Popover, Button } from '@/components/ui'
+import { CircleAlert, CircleDashed, LoaderCircle, Lock, Monitor, Redo2, Smartphone, Undo2 } from 'lucide-react'
+import { Divider, IconButton, Logo, Popover, Segmented } from '@/components/ui'
+import { isModifiedClick } from '@/lib/route'
 import { useEditor } from '@/store/editor'
-import { rememberProfile } from '@/store/persistence'
+import { goHome } from '@/store/persistence'
 import { ExportPopover } from './ExportPopover'
-import { Avatar, ProfileFields } from './ProfileFields'
+import { Avatar, ProfilePanel } from './ProfileFields'
 
 function SaveStatus() {
   const saveState = useEditor((s) => s.saveState)
@@ -15,37 +16,50 @@ function SaveStatus() {
     )
   }
   return (
-    <span className="flex items-center gap-1.5 text-xs text-subtle" aria-live="polite" title="Your design is stored only in this browser. Nothing is uploaded.">
+    <span className="flex items-center gap-1.5 text-xs text-subtle max-sm:hidden" aria-live="polite" title="Your design is stored only in this browser. Nothing is uploaded.">
       {saveState === 'saving' ? <LoaderCircle className="size-3.5 animate-spin" /> : <Lock className="size-3.5" />}
-      <span className="max-sm:hidden">{saveState === 'saving' ? 'Saving…' : 'Saved on this device'}</span>
+      <span className="whitespace-nowrap max-lg:hidden">{saveState === 'saving' ? 'Saving…' : 'Saved on this device'}</span>
     </span>
   )
 }
 
 function ProfileMenu() {
   const profile = useEditor((s) => s.profile)
-  const current = profile ?? { name: '', headline: '' }
   return (
     <Popover
       align="end"
       className="w-80"
       trigger={
-        <button type="button" aria-label="Edit profile preview" title="Edit profile preview" className="mx-1 flex size-8 items-center justify-center rounded-full transition-shadow hover:ring-2 hover:ring-line-strong data-[state=open]:ring-2 data-[state=open]:ring-accent">
+        <button type="button" aria-label="Edit profile preview" title="Edit profile preview" className="mx-1 flex size-8 items-center justify-center rounded-full max-sm:hidden transition-shadow hover:ring-2 hover:ring-line-strong data-[state=open]:ring-2 data-[state=open]:ring-accent">
           <Avatar profile={profile} size={28} />
         </button>
       }
     >
-      <div className="space-y-4 p-1">
-        <div>
-          <h2 className="text-sm font-semibold">Profile preview</h2>
-          <p className="mt-0.5 text-xs text-subtle">Shown under the banner so you can design around it. It is not part of the exported image.</p>
-        </div>
-        <ProfileFields profile={current} onChange={rememberProfile} />
-        <Button className="w-full" onClick={() => useEditor.getState().setScreen('welcome')}>
-          Look up a different LinkedIn profile
-        </Button>
-      </div>
+      <ProfilePanel />
     </Popover>
+  )
+}
+
+/** How the banner is previewed: on a desktop or a phone profile, and what the photo covers. */
+function PreviewSwitch() {
+  const device = useEditor((s) => s.device)
+  const showSafeZones = useEditor((s) => s.showSafeZones)
+  const setView = useEditor((s) => s.setView)
+  return (
+    <div className="flex items-center gap-1 max-sm:ml-2 xl:absolute xl:left-1/2 xl:-translate-x-1/2">
+      <Segmented
+        label="Preview device"
+        value={device}
+        onChange={(next) => setView({ device: next })}
+        options={[
+          { value: 'desktop', title: 'Preview on desktop', label: <><Monitor /><span className="max-md:hidden">Desktop</span></> },
+          { value: 'mobile', title: 'Preview on mobile', label: <><Smartphone /><span className="max-md:hidden">Mobile</span></> },
+        ]}
+      />
+      <IconButton label="Show where your photo covers the banner" active={showSafeZones} onClick={() => setView({ showSafeZones: !showSafeZones })}>
+        <CircleDashed />
+      </IconButton>
+    </div>
   )
 }
 
@@ -54,11 +68,21 @@ export function TopBar() {
   const canRedo = useEditor((s) => s.future.length > 0)
   const mod = navigator.platform.includes('Mac') ? '⌘' : 'Ctrl+'
   return (
-    <header className="flex h-14 shrink-0 items-center gap-1.5 border-b border-line bg-panel px-4">
-      <Logo compact className="text-[15px]" />
+    <header className="relative flex h-14 shrink-0 items-center gap-1.5 border-b border-line bg-panel px-4 max-sm:px-3">
+      <a
+        href="/"
+        aria-label="Openbanner home"
+        title="Home and templates"
+        onClick={(e) => isModifiedClick(e) || (e.preventDefault(), goHome())}
+        className="-mx-1.5 rounded-lg px-1.5 py-1 transition-colors hover:bg-hover"
+      >
+        <Logo compact className="text-[15px]" />
+      </a>
+      <Divider className="mx-2 xl:hidden max-sm:hidden" />
+      <PreviewSwitch />
       <div className="flex-1" />
       <SaveStatus />
-      <Divider className="mx-2" />
+      <Divider className="mx-2 max-sm:hidden" />
       <IconButton label="Undo" shortcut={`${mod}Z`} disabled={!canUndo} onClick={() => useEditor.getState().undo()}>
         <Undo2 />
       </IconButton>

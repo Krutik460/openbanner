@@ -3,6 +3,8 @@
 @theme {
   --font-sans: 'Inter Variable', ui-sans-serif, system-ui, sans-serif;
   --font-mono: 'JetBrains Mono Variable', ui-monospace, monospace;
+  /* Handwritten notes on the landing page. */
+  --font-hand: 'Caveat Variable', ui-rounded, cursive;
 
   /* Plain surfaces: a white page, a light grey canvas, and white for anything that floats. */
   --color-app: #ffffff;
@@ -25,6 +27,18 @@
   --color-accent-ink: #ffffff;
   --color-select: #0f6fec;
   --color-danger: #e03131;
+
+  /* The landing page's hint of colour: soft tints for surfaces, matching inks for icons and doodles. */
+  --color-tint-blue: #e7f3f8;
+  --color-ink-blue: #337ea9;
+  --color-tint-pink: #faf1f5;
+  --color-ink-pink: #c14c8a;
+  --color-tint-green: #edf3ec;
+  --color-ink-green: #448361;
+  --color-tint-purple: #f6f3f9;
+  --color-ink-purple: #9065b0;
+  --color-tint-orange: #fbecdd;
+  --color-ink-orange: #d9730d;
 
   --shadow-pop: 0 0 0 1px rgb(0 0 0 / 0.08), 0 8px 24px -6px rgb(0 0 0 / 0.16), 0 2px 6px -2px rgb(0 0 0 / 0.08);
 
@@ -139,5 +153,51 @@
   *::after {
     animation-duration: 0.01ms !important;
     transition-duration: 0.01ms !important;
+  }
+}
+
+/*
+ * Landing page to editor. The clicked banner and the photo fly to their places
+ * in the editor while the pages crossfade, then fade out as they land so the
+ * editor's own canvas takes over. Only the outgoing snapshots are shown in
+ * flight: the editor draws its banner and photo on the canvas.
+ */
+::view-transition-group(banner),
+::view-transition-group(avatar) {
+  animation-duration: 560ms;
+  animation-timing-function: cubic-bezier(0.32, 0.72, 0, 1);
+}
+::view-transition-old(banner),
+::view-transition-old(avatar) {
+  animation: 560ms ease-in both vt-land;
+}
+::view-transition-new(banner),
+::view-transition-new(avatar) {
+  animation: none;
+  opacity: 0;
+}
+::view-transition-old(root) {
+  animation: 200ms ease-out both vt-out;
+}
+::view-transition-new(root) {
+  animation: 300ms 160ms ease-out both vt-in;
+}
+@keyframes vt-land {
+  0%,
+  45% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes vt-out {
+  to {
+    opacity: 0;
+  }
+}
+@keyframes vt-in {
+  from {
+    opacity: 0;
   }
 }
