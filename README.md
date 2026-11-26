@@ -39,14 +39,18 @@ The endpoint only ever contacts `www.linkedin.com/in/<handle>` and, for the phot
 
 ## Deploying
 
-The front end is a static Vite build (`dist/`). The lookup endpoint is `api/profile.ts`, a web-standard `POST(request)` handler in the layout Vercel uses for functions; the same handler is mounted by `vite dev` and `vite preview`. On a purely static host the app still works — the lookup step reports that it is unavailable and goes to the manual form.
+The app runs on Cloudflare Workers with static assets (`wrangler.jsonc`):
 
-The serverless entry point has been exercised through the Vite middleware and unit tests, not on a live Vercel deployment.
+```bash
+npm run deploy
+```
+
+The Vite build in `dist/` is served as static files, which Cloudflare does not meter. Only `/api/*` runs code: `worker/index.ts` passes the profile lookup to the same handler that `vite dev` mounts locally. Request logging is turned off in the config. To try the Worker locally, run `npm run preview:worker`.
 
 ## Layout
 
 ```
-api/            serverless entry point for the profile lookup
+worker/         Cloudflare Worker entry point for the profile lookup
 server/         lookup logic and its tests (shared by dev server and function)
 src/lib/        document types, templates, fonts, storage, export
 src/store/      editor state (zustand), viewport, autosave
