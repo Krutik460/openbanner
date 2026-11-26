@@ -39,13 +39,22 @@ The endpoint only ever contacts `www.linkedin.com/in/<handle>` and, for the phot
 
 ## Deploying
 
-The app runs on Cloudflare Workers with static assets (`wrangler.jsonc`):
+The app runs on Cloudflare Workers with static assets (`wrangler.jsonc`). The Vite build in `dist/` is served as static files, which Cloudflare does not meter. Only `/api/*` runs code: `worker/index.ts` passes the profile lookup to the same handler that `vite dev` mounts locally. Request logging is turned off in the config.
+
+### Automatic deploys
+
+`.github/workflows/deploy.yml` typechecks, tests and builds every pull request, and deploys every push to `main`. It needs two repository secrets (Settings → Secrets and variables → Actions):
+
+- `CLOUDFLARE_API_TOKEN`: a token made from Cloudflare's "Edit Cloudflare Workers" template
+- `CLOUDFLARE_ACCOUNT_ID`: shown on the Workers & Pages overview in the Cloudflare dashboard
+
+### By hand
 
 ```bash
 npm run deploy
 ```
 
-The Vite build in `dist/` is served as static files, which Cloudflare does not meter. Only `/api/*` runs code: `worker/index.ts` passes the profile lookup to the same handler that `vite dev` mounts locally. Request logging is turned off in the config. To try the Worker locally, run `npm run preview:worker`.
+To try the Worker locally, run `npm run preview:worker`.
 
 ## Layout
 
