@@ -1,3 +1,5 @@
+import type { PhotoFrame } from './photoFrame'
+
 export interface GradientStop {
   offset: number
   color: string
@@ -27,7 +29,7 @@ export interface MeshGradient {
 export type Fill = string | LinearGradient
 export type BackgroundFill = Fill | MeshGradient
 
-export type PatternKind = 'dots' | 'grid' | 'lines' | 'noise'
+export type PatternKind = 'dots' | 'grid' | 'lines' | 'waves' | 'noise'
 
 export interface Pattern {
   kind: PatternKind
@@ -72,7 +74,7 @@ export interface TextElement extends BaseElement {
   uppercase: boolean
 }
 
-export type ShapeKind = 'rect' | 'ellipse' | 'triangle' | 'diamond' | 'hexagon' | 'star' | 'arrow' | 'blob' | 'quarter' | 'arch'
+export type ShapeKind = 'rect' | 'ellipse' | 'triangle' | 'diamond' | 'hexagon' | 'star' | 'arrow' | 'blob' | 'quarter' | 'arch' | 'sparkle' | 'ribbon'
 
 export interface ShapeElement extends BaseElement {
   type: 'shape'
@@ -114,6 +116,8 @@ export interface Profile {
   location?: string
   /** data: URL */
   avatar?: string
+  /** Preview one of LinkedIn's photo frames (#OpenToWork, #Hiring). Never part of the exported banner. */
+  frame?: PhotoFrame
 }
 
 export type Device = 'desktop' | 'mobile'

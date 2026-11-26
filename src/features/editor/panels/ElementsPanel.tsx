@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Search } from 'lucide-react'
 import type { Context } from 'konva/lib/Context'
-import { traceShape } from '@/canvas/shapes'
+import { LINE_SHAPES, traceShape } from '@/canvas/shapes'
 import { SectionTitle } from '@/components/ui'
 import { ICON_NAMES, ICONS } from '@/lib/icons'
 import type { ShapeElement } from '@/lib/types'
@@ -22,9 +22,11 @@ const SHAPES: ShapePreset[] = [
   { label: 'Blob', shape: 'blob', width: 200, height: 180 },
   { label: 'Quarter circle', shape: 'quarter', width: 170, height: 170 },
   { label: 'Arch', shape: 'arch', width: 140, height: 200 },
+  { label: 'Sparkle', shape: 'sparkle', width: 160, height: 160 },
   { label: 'Line', shape: 'rect', width: 260, height: 4, radius: 2 },
   { label: 'Frame', shape: 'rect', width: 240, height: 160, radius: 16, fill: null },
   { label: 'Ring', shape: 'ellipse', width: 170, height: 170, fill: null },
+  { label: 'Ribbon', shape: 'ribbon', width: 420, height: 180, fill: null, strokeWidth: 1.25 },
 ]
 
 function ShapePreview({ preset }: { preset: ShapePreset }) {
@@ -44,10 +46,9 @@ function ShapePreview({ preset }: { preset: ShapePreset }) {
     ctx.beginPath()
     // traceShape only uses path methods the native 2D context shares with Konva's wrapper.
     traceShape(ctx as unknown as Context, preset.shape, w, h, (preset.radius ?? 0) * scale)
-    ctx.closePath()
     if (preset.fill === null) {
       ctx.strokeStyle = '#111111'
-      ctx.lineWidth = 2
+      ctx.lineWidth = LINE_SHAPES.has(preset.shape) ? 0.6 : 2
       ctx.stroke()
     } else {
       ctx.fillStyle = '#111111'

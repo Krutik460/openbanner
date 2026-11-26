@@ -11,5 +11,5 @@
     "skipLibCheck": true,
     "verbatimModuleSyntax": true
   },
-  "include": ["vite.config.ts", "worker", "server"]
+  "include": ["vite.config.ts"]
 }

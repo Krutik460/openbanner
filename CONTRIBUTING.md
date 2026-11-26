@@ -27,7 +27,7 @@ npm run dev
 
 1. Fork the repository and create a branch from `main`.
 2. Make your change. Keep pull requests focused on one thing.
-3. Add or update tests when you change behavior that can be tested (see `server/linkedin.test.ts` for an example).
+3. Add or update tests when you change behavior that can be tested (see `src/lib/templates.test.ts` for an example).
 4. Make sure everything passes locally:
 
    ```bash

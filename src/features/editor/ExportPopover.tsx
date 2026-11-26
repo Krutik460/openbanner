@@ -84,7 +84,7 @@ function ExportForm() {
         ) : !blob ? (
           'Rendering…'
         ) : tooBig ? (
-          <span className="text-danger">{formatBytes(blob.size)} — over LinkedIn’s 8 MB limit. Try JPG or the smaller size.</span>
+          <span className="text-danger">{formatBytes(blob.size)}: over LinkedIn’s 8 MB limit. Try JPG or the smaller size.</span>
         ) : (
           `${formatBytes(blob.size)} · ready to upload`
         )}

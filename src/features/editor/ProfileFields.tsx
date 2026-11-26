@@ -3,6 +3,8 @@ import { Camera, UserRound } from 'lucide-react'
 import { toAvatarDataUrl } from '@/lib/assets'
 import type { Profile } from '@/lib/types'
 import { initials } from '@/lib/util'
+import { useEditor } from '@/store/editor'
+import { rememberProfile } from '@/store/persistence'
 
 export function Avatar({ profile, size }: { profile: Pick<Profile, 'name' | 'avatar'> | null; size: number }) {
   return profile?.avatar ? (
@@ -52,6 +54,20 @@ export function ProfileFields({ profile, onChange }: { profile: Profile; onChang
           />
         </label>
       </div>
+    </div>
+  )
+}
+
+/** Popover body for editing the profile preview; saves as you type. */
+export function ProfilePanel() {
+  const profile = useEditor((s) => s.profile) ?? { name: '', headline: '' }
+  return (
+    <div className="space-y-4 p-1">
+      <div>
+        <h2 className="text-sm font-semibold">Your profile preview</h2>
+        <p className="mt-0.5 text-xs text-subtle">Optional. Shown under the banner so you can design around it, and never part of the exported image. Saved in this browser only.</p>
+      </div>
+      <ProfileFields profile={profile} onChange={rememberProfile} />
     </div>
   )
 }

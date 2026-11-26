@@ -1,6 +1,6 @@
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react'
 import { ContextMenu } from 'radix-ui'
-import { Circle, Group, Image as KImage, Layer, Line, Rect, Stage, Text, Transformer } from 'react-konva'
+import { Circle, Group, Image as KImage, Layer, Line, Rect, Shape, Stage, Text, TextPath, Transformer } from 'react-konva'
 import type Konva from 'konva'
 import type { KonvaEventObject } from 'konva/lib/Node'
 import { AVATAR, BANNER } from '@/lib/constants'
@@ -8,6 +8,8 @@ import type { BannerElement, Device, Profile } from '@/lib/types'
 import { initials, round } from '@/lib/util'
 import { useEditor } from '@/store/editor'
 import { useView } from '@/store/view'
+import { useFontVersion } from '@/lib/fonts'
+import { FRAME_BAND, PHOTO_FRAMES, photoFrameLayout, type PhotoFrame } from '@/lib/photoFrame'
 import { BackgroundNodes, ElementNode, type NodeBinder } from './BannerScene'
 import { fitView } from './fit'
 import { registerContent } from './registry'
@@ -54,7 +56,7 @@ function AvatarOverlay({ profile, device, dimmed }: { profile: Profile | null; d
           <KImage image={photo} x={a.ring} y={a.ring} width={inner} height={inner} />
         ) : (
           <>
-            <Rect x={a.ring} y={a.ring} width={inner} height={inner} fill="#D9E0E7" />
+            <Rect x={a.ring} y={a.ring} width={inner} height={inner} fill="#E8E8E7" />
             {letters ? (
               <Text
                 x={a.ring} y={a.ring} width={inner} height={inner} align="center" verticalAlign="middle"
@@ -62,14 +64,50 @@ function AvatarOverlay({ profile, device, dimmed }: { profile: Profile | null; d
               />
             ) : (
               <>
-                <Circle x={r} y={r * 0.82} radius={inner * 0.19} fill="#93A2B1" />
-                <Circle x={r} y={r * 1.95} radius={inner * 0.4} fill="#93A2B1" />
+                <Circle x={r} y={r * 0.82} radius={inner * 0.19} fill="#CBCBC8" />
+                <Circle x={r} y={r * 1.95} radius={inner * 0.4} fill="#CBCBC8" />
               </>
             )}
           </>
         )}
+        {profile?.frame && <PhotoFrameRing frame={profile.frame} r={r} radius={r - a.ring} />}
       </Group>
     </Group>
+  )
+}
+
+/** One of LinkedIn's photo frames over the photo; see `FRAME_BAND` for its shape. */
+function PhotoFrameRing({ frame: kind, r, radius }: { frame: PhotoFrame; r: number; radius: number }) {
+  const { text, color } = PHOTO_FRAMES[kind]
+  const fontVersion = useFontVersion(FRAME_BAND.family, FRAME_BAND.weight, false, text)
+  const frame = photoFrameLayout(r, radius)
+  return (
+    <>
+      <Shape
+        sceneFunc={(ctx, shape) => {
+          ctx.beginPath()
+          ctx.arc(r, r, radius + 1, 0, Math.PI * 2, false)
+          ctx.arc(r, r, frame.innerRadius, 0, Math.PI * 2, true)
+          ctx.closePath()
+          ctx.fillStrokeShape(shape)
+        }}
+        fillLinearGradientStartPoint={frame.fadeStart}
+        fillLinearGradientEndPoint={frame.fadeEnd}
+        fillLinearGradientColorStops={[0, `${color}00`, 1, color]}
+      />
+      <TextPath
+        key={fontVersion}
+        data={frame.textPath}
+        text={text}
+        align="center"
+        textBaseline="alphabetic"
+        fill="#FFFFFF"
+        fontFamily={FRAME_BAND.family}
+        fontStyle={String(FRAME_BAND.weight)}
+        fontSize={frame.fontSize}
+        letterSpacing={frame.letterSpacing}
+      />
+    </>
   )
 }
 
@@ -105,7 +143,8 @@ function SafeZones() {
   )
 }
 
-export function EditorStage() {
+/** `children` are HTML overlays that sit above the canvas and share its wheel and pan handling. */
+export function EditorStage({ children }: { children?: ReactNode }) {
   const hostRef = useRef<HTMLDivElement>(null)
   const stageRef = useRef<Konva.Stage>(null)
   const contentRef = useRef<Konva.Group>(null)
@@ -145,10 +184,14 @@ export function EditorStage() {
   // --- viewport ---------------------------------------------------------
   useLayoutEffect(() => {
     const host = hostRef.current!
-    const observer = new ResizeObserver(() => {
+    const measure = () => {
       useView.getState().set({ width: host.clientWidth, height: host.clientHeight })
       if (useView.getState().fitted) fitView()
-    })
+    }
+    // Measure now as well: the first frame must already be fitted, because the
+    // landing page's view transition captures it before any observer fires.
+    measure()
+    const observer = new ResizeObserver(measure)
     observer.observe(host)
     return () => observer.disconnect()
   }, [])
@@ -569,9 +612,10 @@ export function EditorStage() {
           className="pointer-events-none absolute flex items-center justify-center text-center text-sm font-medium text-white/70 mix-blend-difference"
           style={{ left: view.x + W * scale * 0.34, top: view.y, width: W * scale * 0.62, height: H * scale }}
         >
-          Pick a template, or add text and elements from the left.
+          Pick a template, or add text and elements from the toolbar below.
         </p>
       )}
+      {children}
       {editing?.type === 'text' && <TextEditor el={editing} />}
       {(spaceDown || panning) && <div className="absolute inset-0 z-30" onPointerDown={startPan} />}
     </div>

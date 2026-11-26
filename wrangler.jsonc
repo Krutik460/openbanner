@@ -1,14 +1,11 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "openbanner",
-  "main": "worker/index.ts",
   "compatibility_date": "2026-10-01",
   "assets": {
-    // The Vite build. Unknown paths fall back to index.html.
+    // The Vite build, served as static files only: no Worker code runs. Unknown paths fall back to index.html.
     "directory": "./dist",
-    "not_found_handling": "single-page-application",
-    // Only the profile lookup runs code; everything else is served as a static file.
-    "run_worker_first": ["/api/*"]
+    "not_found_handling": "single-page-application"
   },
   // Privacy first: no request logs are collected.
   "observability": { "enabled": false }

@@ -3,25 +3,21 @@ import { Tooltip } from 'radix-ui'
 import { Editor } from '@/features/editor/Editor'
 import { Welcome } from '@/features/welcome/Welcome'
 import { useEditor } from '@/store/editor'
-import { restore, startAutosave } from '@/store/persistence'
+import { followHistory, restore, startAutosave } from '@/store/persistence'
 
 export function App() {
   const screen = useEditor((s) => s.screen)
 
   useEffect(() => {
     void restore()
-    return startAutosave()
+    const stopAutosave = startAutosave()
+    const stopHistory = followHistory()
+    return () => (stopAutosave(), stopHistory())
   }, [])
 
   return (
     <Tooltip.Provider delayDuration={350} skipDelayDuration={200}>
-      {screen === 'loading' ? null : screen === 'welcome' ? (
-        <div className="h-full overflow-y-auto">
-          <Welcome />
-        </div>
-      ) : (
-        <Editor />
-      )}
+      {screen === 'loading' ? null : screen === 'welcome' ? <Welcome /> : <Editor />}
     </Tooltip.Provider>
   )
 }

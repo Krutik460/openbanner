@@ -1,12 +1,12 @@
 import type { BackgroundFill, LinearGradient, MeshGradient, Pattern } from './types'
 
-const linear = (angle: number, ...colors: string[]): LinearGradient => ({
+export const linear = (angle: number, ...colors: string[]): LinearGradient => ({
   type: 'linear',
   angle,
   stops: colors.map((color, i) => ({ offset: colors.length === 1 ? 0 : i / (colors.length - 1), color })),
 })
 
-const mesh = (base: string, ...blobs: [x: number, y: number, r: number, color: string][]): MeshGradient => ({
+export const mesh = (base: string, ...blobs: [x: number, y: number, r: number, color: string][]): MeshGradient => ({
   type: 'mesh',
   base,
   blobs: blobs.map(([x, y, r, color]) => ({ x, y, r, color })),
@@ -49,6 +49,7 @@ export const PATTERNS: { label: string; pattern: Omit<Pattern, 'color'> | null }
   { label: 'Dots', pattern: { kind: 'dots', opacity: 0.16, size: 28 } },
   { label: 'Grid', pattern: { kind: 'grid', opacity: 0.1, size: 44 } },
   { label: 'Lines', pattern: { kind: 'lines', opacity: 0.1, size: 22 } },
+  { label: 'Waves', pattern: { kind: 'waves', opacity: 0.08, size: 30 } },
 ]
 
 /** Rough perceived lightness, used to pick readable defaults over a background. */
